@@ -1,0 +1,1 @@
+# TODO: Fix login CSS spacing&#10;&#10;1. [x] Create TODO.md&#10;2. [x] Edit estilo_login.css to add margins/gaps between inputs (added 20px margin-bottom to .inputBx, 25px gap to .login)&#10;3. [x] Update TODO.md&#10;4. [ ] Test in browser&#10;5. [ ] Complete task
