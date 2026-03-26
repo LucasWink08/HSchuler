@@ -10,7 +10,7 @@
 <nav>
   <div class="left">
     <ul>
-      <li><a href="#">Home</a></li>
+      <li><a href="homepage.php">Home</a></li>
     </ul>
   </div>
   <div class="center">
@@ -36,10 +36,10 @@
     <h2>Login</h2>
     <form action="processa_login.php" method="post">
         <div class="inputBx">
-          <input type="text" placeholder="Username">
+          <input type="text" placeholder="Username" name="usuario">
         </div>
         <div class="inputBx">
-          <input type="password" placeholder="Password">
+          <input type="password" placeholder="Password" name="senha">
         </div>
         <div class="inputBx">
           <input type="submit" value="Sign in">
