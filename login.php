@@ -35,22 +35,22 @@
   <div class="login">
     <h2>Login</h2>
     <form action="processa_login.php" method="post">
-        <div class="inputBx">
-          <input type="text" placeholder="Username" name="usuario">
-        </div>
-        <div class="inputBx">
-          <input type="password" placeholder="Password" name="senha">
-        </div>
-        <div class="inputBx">
-          <input type="submit" value="Sign in">
-        </div>
-        <div class="links">
-          <a href="#">Esqueceu sua senha</a>
-          <a href="cadastro.php" class="signup-trigger">Faça seu cadastro</a>
-        </div>
-        <div class="signup-dropdown">
-          <p>Faça login para acessar o cadastro ou <a href="#">clique aqui</a> para criar uma conta.</p>
-        </div>
+          <div class="inputBx">
+            <input type="text" placeholder="Username" name="usuario">
+          </div>
+          <div class="inputBx">
+            <input type="password" placeholder="Password" name="senha">
+          </div>
+          <div class="inputBx">
+            <input type="submit" value="Entrar">
+          </div>
+          <div class="links">
+            <a href="#">Esqueceu sua senha</a>
+            <a href="cadastro.php" class="signup-trigger">Faça seu cadastro</a>
+          </div>
+          <div class="signup-dropdown">
+            <p>Faça login para acessar o cadastro ou <a href="#">clique aqui</a> para criar uma conta.</p>
+          </div>
     </form>
   </div>
 </div>
