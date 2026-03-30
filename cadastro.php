@@ -40,9 +40,17 @@
         <div class="inputBx">
           <input type="email" name="email" placeholder="Email" required>
         </div>
-
         <div class="inputBx">
-          <input type="submit" value="Criar Conta">
+          <input type="date" name="data_nascimento" required>
+        </div>
+        <div class="inputBx">
+          <input type="password" name="senha" placeholder="Senha" required>
+        </div>
+        <div class="inputBx">
+          <input type="password" name="confirma_senha" placeholder="Confirmação de senha" required>
+        </div>
+        <div class="inputBx">
+          <input type="submit" value="Criar conta">
         </div>
         <div class="links">
           <a href="login.php">Já possui conta? Faça login</a>

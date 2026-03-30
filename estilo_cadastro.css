@@ -111,7 +111,7 @@ animation: stars 35s linear infinite;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-gap: 4px;
+gap: 1px;
 }
 
 .login .inputBx {
@@ -119,7 +119,10 @@ margin-bottom: 2px;
 }
 
 .login .inputBx:last-of-type {
-  margin-bottom: 0;
+  margin-bottom: 0px;
+}
+.login .links {
+  margin-top: 0px;
 }
 .login h2 {
   font-size: 2em;

@@ -1,24 +1,32 @@
 <?php
-$usuario = isset($_POST['usuario'])?$_POST['usuario']:"";
-$senha = isset($_POST['senha'])?$_POST['senha']:"";
+// CORRIGIDO: session_start() deve vir antes de qualquer uso de $_SESSION
+session_start();
+
+$usuario = isset($_POST['usuario']) ? $_POST['usuario'] : "";
+$senha = isset($_POST['senha']) ? $_POST['senha'] : "";
+
 include_once "conexao_inc.php";
-$conexao = new PDO(dsn,usuario,senha);
-$sql = "SELECT id,nome 
-          FROM aluno 
-         WHERE usuario = :usuario
-           AND senha = :password_hash(senha)";
+
+// CORRIGIDO: a senha NÃO deve ser comparada diretamente no SQL quando se usa password_hash,
+// pois o hash é diferente a cada vez. Busca apenas pelo usuário e verifica o hash no PHP.
+$sql = "SELECT id, usuario, senha
+        FROM aluno 
+        WHERE usuario = :usuario";
+
+$conexao = new PDO(dsn, usuario, senha);
 $comando = $conexao->prepare($sql);
-$comando->bindValue(":usuario",$usuario);
-$comando->bindValue(":senha",password_hash($senha));
+$comando->bindParam(":usuario", $usuario);
 $comando->execute();
-$registro = $comando->fetch();
-if ($registro){
-    session_start();
-    $_SESSION['id'] = $registro['id'];
-    $_SESSION['nome'] = $registro['nome'];
-    header("location: homepage.php");
-}else{
-    header("location: login.html?auth_error=Usuário ou senha incorretos!");
+$linha = $comando->fetch(PDO::FETCH_ASSOC);
+
+// CORRIGIDO: password_verify compara a senha digitada com o hash salvo no banco
+if ($linha && password_verify($senha, $linha['senha'])) {
+    $_SESSION['id'] = $linha['id'];
+    $_SESSION['nome'] = $linha['usuario']; // CORRIGIDO: coluna 'nome' não existe na query, usar 'usuario'
+    header("Location: homepage.php");
+    exit();
+} else {
+    header("Location: login.php?auth_error=Usuário ou senha incorretos!");
+    exit();
 }
-
-
+?>

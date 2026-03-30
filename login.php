@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title></title>
+    <title>Login - HSchuler</title>
     <link rel="stylesheet" type="text/css" href="estilo_login.css">
 </head>
 <body>
@@ -34,12 +34,17 @@
     <i style="--clr:#00002e;"></i>
   <div class="login">
     <h2>Login</h2>
+    <?php
+    if (isset($_GET['auth_error'])) {
+        echo '<div class="error-message">' . htmlspecialchars($_GET['auth_error']) . '</div>';
+    }
+    ?>
     <form action="processa_login.php" method="post">
           <div class="inputBx">
-            <input type="text" placeholder="Username" name="usuario">
+            <input type="text" placeholder="Usuario" name="usuario" required>
           </div>
           <div class="inputBx">
-            <input type="password" placeholder="Password" name="senha">
+            <input type="password" placeholder="Senha" name="senha" required>
           </div>
           <div class="inputBx">
             <input type="submit" value="Entrar">
