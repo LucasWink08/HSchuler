@@ -1,2 +1,4 @@
 # HSchuler
-O HSchuler é uma ferramenta educacional com elementos de gamificação que servirá de suporte para alunos com dificuldade em matemática, principalmente em álgebra.
+O HSchuler é um projeto desenvolvido como Trabalho de Conclusão de Curso (TCC) para o 3º ano do Ensino Médio Técnico Integrado em Informática. A ferramenta foi idealizada como um suporte educacional para alunos que enfrentam dificuldades no aprendizado de matemática, com foco especial na área de álgebra.
+
+Através da integração de elementos de gamificação, o software busca transformar o estudo de equações e funções em uma experiência interativa e menos intimidadora. Ao unir os conhecimentos técnicos em desenvolvimento de sistemas adquiridos ao longo do curso com metodologias pedagógicas modernas, o HSchuler oferece uma interface intuitiva onde o progresso do estudante é recompensado, incentivando a prática constante e a superação de obstáculos acadêmicos. O projeto representa a culminação da nossa jornada técnica, aplicando programação, design de interface e lógica para resolver um problema real do cotidiano escolar.
