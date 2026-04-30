@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['filtro']) && !empty($_G
     <table>
       <tr>
         <th>ID</th>
-        <th>Usuário</th>
+        <th>Usuários</th>
         <th>Email</th>
         <th>Data Nasc.</th>
         <th>Ação</th>
