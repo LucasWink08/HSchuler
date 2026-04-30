@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['filtro']) && !empty($_G
         <th>Usuário</th>
         <th>Email</th>
         <th>Data Nasc.</th>
-        <th>Ações</th>
+        <th>Ação</th>
       </tr>
       <?php foreach ($usuarios as $user): ?>
         <tr>
