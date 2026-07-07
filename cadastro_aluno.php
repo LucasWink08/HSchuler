@@ -35,7 +35,7 @@
   <form class="login" method="POST" action="processa_cadastro.php">
         <h2>Cadastro</h2>
         <div class="inputBx">
-          <input type="text" name="usuario" placeholder="Usuario" required>
+          <input type="text" name="nome" placeholder="Usuario" required>
         </div>
         <div class="inputBx">
           <input type="email" name="email" placeholder="Email" required>

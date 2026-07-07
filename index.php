@@ -32,7 +32,6 @@ session_start();
   <div class="right">
     <ul>
       <li><a href="login.php">Login</a></li>
-      <li><a href="cadastro.php">Cadastro</a></li>
     </ul>
   </div>
 </nav>
@@ -46,7 +45,7 @@ session_start();
     <div class="buttons">
         <?php
           if(!isset($_SESSION['usuario'])){
-             echo "<a href='cadastro.php'>Começar</a>". "<a href='login.php'>Entrar</a>";
+             echo "<a href='escolha_cadastro.php'>Começar</a>". "<a href='login.php'>Entrar</a>";
           }
         ?>
     </div>

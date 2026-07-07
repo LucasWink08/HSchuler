@@ -115,12 +115,13 @@ gap: 1px;
 }
 
 .login .inputBx {
-margin-bottom: 2px;
+  margin-bottom: 14px;
 }
 
 .login .inputBx:last-of-type {
   margin-bottom: 0px;
 }
+
 .login .links {
   margin-top: 0px;
 }

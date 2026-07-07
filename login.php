@@ -10,7 +10,7 @@
 <nav>
   <div class="left">
     <ul>
-      <li><a href="homepage.php">Home</a></li>
+      <li><a href="index.php">Home</a></li>
     </ul>
   </div>
   <div class="center">
@@ -51,7 +51,7 @@
           </div>
           <div class="links">
             <a href="#">Esqueceu sua senha</a>
-            <a href="cadastro.php" class="signup-trigger">Faça seu cadastro</a>
+            <a href="escolha_cadastro.php" class="signup-trigger">Faça seu cadastro</a>
           </div>
           <div class="signup-dropdown">
             <p>Faça login para acessar o cadastro ou <a href="#">clique aqui</a> para criar uma conta.</p>
