@@ -85,11 +85,23 @@ class QuestaoService
 
     public function getQuestoes(string $area): array
     {
+        $questoesDoBanco = $this->buscarQuestoesDoBanco($area);
+
+        if ($questoesDoBanco !== []) {
+            return $questoesDoBanco;
+        }
+
         return $this->questoes[$area] ?? $this->questoes['potenciacao'];
     }
 
     public function getQuestoesSimulado(): array
     {
+        $questoesDoBanco = $this->buscarQuestoesDoBanco();
+
+        if ($questoesDoBanco !== []) {
+            return $questoesDoBanco;
+        }
+
         $questoes = [];
 
         foreach ($this->questoes as $areaQuestoes) {
@@ -176,5 +188,81 @@ class QuestaoService
     public function corrigir(array $questao, ?string $resposta): bool
     {
         return $resposta !== null && (int) $resposta === (int) $questao['correta'];
+    }
+
+    private function buscarQuestoesDoBanco(?string $area = null): array
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->query(
+                'SELECT questao.id, questao.enunciado, questao.alternativa_a, questao.alternativa_b,
+                        questao.alternativa_c, questao.alternativa_d, questao.resposta_correta,
+                        questao.explicacao, questao.pontuacao, questao.atividade_id,
+                        assunto.nome AS assunto
+                 FROM questao
+                 LEFT JOIN assunto ON assunto.id = questao.assunto_id
+                 ORDER BY questao.id'
+            );
+            $questoes = [];
+
+            foreach ($stmt->fetchAll() as $questao) {
+                if ($area !== null && $this->normalizarArea((string) $questao['assunto']) !== $area) {
+                    continue;
+                }
+
+                $alternativas = [
+                    $questao['alternativa_a'],
+                    $questao['alternativa_b'],
+                    $questao['alternativa_c'],
+                    $questao['alternativa_d'],
+                ];
+
+                if (in_array(null, $alternativas, true) || in_array('', $alternativas, true)) {
+                    continue;
+                }
+
+                $indiceCorreto = $this->indiceResposta((string) $questao['resposta_correta']);
+                if ($indiceCorreto === null) {
+                    continue;
+                }
+
+                $questoes[] = [
+                    'id' => (int) $questao['id'],
+                    'enunciado' => $questao['enunciado'],
+                    'alternativas' => $alternativas,
+                    'correta' => $indiceCorreto,
+                    'explicacao' => $questao['explicacao'] ?? '',
+                    'pontuacao' => (int) $questao['pontuacao'],
+                    'atividade_id' => $questao['atividade_id'] === null ? null : (int) $questao['atividade_id'],
+                ];
+            }
+
+            return $questoes;
+        } catch (PDOException $exception) {
+            return [];
+        }
+    }
+
+    private function indiceResposta(string $resposta): ?int
+    {
+        $resposta = strtolower(trim($resposta));
+        $mapa = ['a' => 0, 'b' => 1, 'c' => 2, 'd' => 3];
+
+        if (array_key_exists($resposta, $mapa)) {
+            return $mapa[$resposta];
+        }
+
+        return ctype_digit($resposta) && (int) $resposta >= 0 && (int) $resposta <= 3
+            ? (int) $resposta
+            : null;
+    }
+
+    private function normalizarArea(string $area): string
+    {
+        $area = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $area) ?: $area;
+        $area = strtolower(trim($area));
+        $area = preg_replace('/[^a-z0-9]+/', '-', $area) ?: '';
+
+        return trim($area, '-');
     }
 }

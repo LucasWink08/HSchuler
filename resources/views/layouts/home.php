@@ -1,65 +1,121 @@
 <?php
-session_start();
+$alunoId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
+$alunoId = $alunoId !== false && $alunoId !== null && $alunoId > 0 ? (int) $alunoId : null;
+$usuario = trim((string) ($_SESSION['usuario'] ?? ''));
+$estaLogado = $alunoId !== null && $usuario !== '';
+$resumo = [
+    'xp' => 0,
+    'streak_atual' => 0,
+    'etapas_concluidas' => 0,
+    'total_etapas' => 0,
+];
+$progressoAreas = [];
 
+if ($estaLogado) {
+    $trilhaService = new TrilhaService();
+    $resumo = array_merge($resumo, $trilhaService->getResumo($alunoId));
+    $progressoAreas = $trilhaService->getProgressoPorArea($alunoId);
+}
 
-
+$xp = max(0, (int) ($resumo['xp'] ?? 0));
+$nivel = intdiv($xp, 100) + 1;
+$xpNoNivel = $xp % 100;
+$progressoNivel = $xpNoNivel;
+$streak = max(0, (int) ($resumo['streak_atual'] ?? 0));
+$etapasConcluidas = max(0, (int) ($resumo['etapas_concluidas'] ?? 0));
+$totalEtapas = max(0, (int) ($resumo['total_etapas'] ?? 0));
+$areas = [
+    ['id' => 'potenciacao', 'titulo' => 'Potenciação', 'icone' => 'a<sup>2</sup>', 'nivel' => 'Iniciante', 'cor' => 'blue'],
+    ['id' => 'fracoes-algebricas', 'titulo' => 'Frações algébricas', 'icone' => '<span>x</span><small>y</small>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
+    ['id' => 'produtos-notaveis', 'titulo' => 'Produtos notáveis', 'icone' => '(a + b)<sup>2</sup>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
+    ['id' => 'fatoracao', 'titulo' => 'Fatoração', 'icone' => '(x - a)(x + a)', 'nivel' => 'Avançado', 'cor' => 'pink'],
+    ['id' => 'equacoes', 'titulo' => 'Equações', 'icone' => 'x<sup>2</sup> - 4 = 0', 'nivel' => 'Avançado', 'cor' => 'pink'],
+    ['id' => 'inequacoes', 'titulo' => 'Inequações', 'icone' => 'x &gt; 0', 'nivel' => 'Especialista', 'cor' => 'purple'],
+];
 ?>
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo - HSchuler</title>
-    <link rel="stylesheet" href="<?= ASSET_URL ?>/css/estilo_homepage.css">
+    <title>HSchuler — Domine a matemática</title>
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=16">
 </head>
 <body class="home-page">
-<nav>
-  <div class="left">
-    <ul>
-      <li><a href="<?= app_route('/') ?>">Home</a></li>
-    </ul>
-  </div>
-  <div class="center">
-    <ul>
-      <li class="trilha-dropdown">
-        <span class="trilha-trigger" tabindex="0" role="button">Trilha de aprendizado</span>
-        <div class="trilha-menu">
-          <a href="<?= app_route('/aluno/questoes') ?>&area=potenciacao">Potenciação</a>
-          <a href="<?= app_route('/aluno/questoes') ?>&area=fracoes-algebricas">Frações Algébricas</a>
-          <a href="<?= app_route('/aluno/questoes') ?>&area=produtos-notaveis">Produtos Notáveis</a>
-          <a href="<?= app_route('/aluno/questoes') ?>&area=fatoracao">Fatoração</a>
-          <a href="<?= app_route('/aluno/questoes') ?>&area=equacoes">Equações</a>
-          <a href="<?= app_route('/aluno/questoes') ?>&area=inequacoes">Inequações</a>
+    <nav class="home-nav" aria-label="Navegação principal">
+        <a class="home-logo" href="<?= app_route('/') ?>" aria-label="Página inicial">
+            <img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
+        </a>
+        <div class="home-nav-links">
+            <a class="is-active" href="#trilha">Trilha de aprendizado</a>
+            <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>
+            <a href="<?= app_route('/aluno/simulados') ?>">Simulados</a>
+            <a href="<?= app_route('/ranking') ?>">Ranking</a>
+            <a href="#sobre">Sobre</a>
         </div>
-      </li>
-      <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
-      <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
-      <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
-      <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
-    </ul>
-  </div>
-  <div class="right">
-    <ul>
-      <li><a href="<?= app_route('/login') ?>">Login</a></li>
-    </ul>
-  </div>
-</nav>
-<div class="ring">
-    <i style="--clr:#00002e;"></i>
-    <i style="--clr:#ffffff;"></i>
-    <i style="--clr:#00002e;"></i>
-  <div class="welcome" id="sobre">
-    <h1>Bem-vindo!</h1>
-    <p>Explore nosso plataforma de aprendizado com videoaulas, simulados e ranking. Comece sua jornada agora mesmo.</p>
-    <div class="buttons">
-        <?php
-          if(!isset($_SESSION['usuario'])){
-             echo "<a href='" . APP_URL . "/index.php?route=/cadastro'>Começar</a>" . "<a href='" . APP_URL . "/index.php?route=/login'>Entrar</a>";
-          }
-        ?>
-    </div>
-  </div>
-</div>
+        <div class="home-nav-actions">
+            <?php if ($estaLogado): ?>
+                <a class="account-link" href="<?= app_route('/aluno/dashboard') ?>" aria-label="Abrir painel do aluno"><span aria-hidden="true">&#9787;</span><?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?></a>
+                <a class="nav-cta" href="<?= app_route('/aluno/trilha') ?>">Continuar</a>
+            <?php else: ?>
+                <a class="account-link" href="<?= app_route('/login') ?>"><span aria-hidden="true">&#9787;</span>Login</a>
+                <a class="nav-cta" href="<?= app_route('/cadastro') ?>">Começar agora</a>
+            <?php endif; ?>
+        </div>
+    </nav>
+
+    <main class="home-main">
+        <section class="home-hero" id="sobre" aria-labelledby="hero-title">
+            <div class="hero-orbit" aria-hidden="true"></div>
+            <img class="hero-logo" src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
+            <h1 id="hero-title">Domine a <span>matemática.</span></h1>
+            <p>Aprenda, pratique e evolua com uma plataforma criada para transformar seus estudos em uma experiência de jogo.</p>
+            <div class="hero-actions">
+                <a class="hero-button hero-button-primary" href="<?= $estaLogado ? app_route('/aluno/trilha') : app_route('/cadastro') ?>"><?= $estaLogado ? 'Continuar jornada' : 'Começar agora' ?> <span aria-hidden="true">&rarr;</span></a>
+                <a class="hero-button hero-button-secondary" href="#trilha"><span aria-hidden="true">&#9675;</span> Explorar trilha</a>
+            </div>
+        </section>
+
+        <aside class="home-profile-card" aria-label="Resumo do seu progresso">
+            <div class="profile-level">
+                <div class="level-badge" aria-hidden="true"><?= $nivel ?></div>
+                <div>
+                    <span>Nível</span>
+                    <strong><?= $estaLogado ? 'Nível ' . $nivel : 'Comece sua jornada' ?></strong>
+                </div>
+            </div>
+            <div class="xp-row"><span><?= $estaLogado ? $xpNoNivel . ' / 100 XP' : 'Entre para registrar XP' ?></span><div class="xp-track"><i style="--xp:<?= $estaLogado ? $progressoNivel : 0 ?>%"></i></div></div>
+            <div class="profile-stats">
+                <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $estaLogado ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
+                <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>
+            </div>
+        </aside>
+
+        <section class="learning-section" id="trilha" aria-labelledby="learning-title">
+            <header class="learning-header">
+                <div>
+                    <p class="section-mark" aria-hidden="true">//</p>
+                    <h2 id="learning-title">Trilha de aprendizado</h2>
+                    <p>Domine os principais conteúdos e avance no seu ritmo.</p>
+                </div>
+                <a href="<?= app_route('/aluno/trilha') ?>">Ver todos <span aria-hidden="true">&rarr;</span></a>
+            </header>
+            <div class="learning-cards">
+                <?php foreach ($areas as $area): ?>
+                    <?php $progresso = $progressoAreas[$area['id']] ?? ['concluidas' => 0, 'total' => 0, 'percentual' => 0]; ?>
+                    <a class="learning-card" href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>" aria-label="Abrir trilha de <?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?>">
+                        <span class="card-formula <?= $area['cor'] ?>"><?= $area['icone'] ?></span>
+                        <strong><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>
+                        <span class="card-level"><i class="<?= $area['cor'] ?>"></i><?= $area['nivel'] ?></span>
+                        <div class="card-progress"><span><i style="--progress:<?= $progresso['percentual'] ?>%"></i></span><small><?= $progresso['percentual'] ?>%</small></div>
+                        <span class="card-open" aria-hidden="true">&rarr;</span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+            <?php if ($estaLogado && $totalEtapas > 0): ?>
+                <p class="learning-summary"><?= $etapasConcluidas ?> de <?= $totalEtapas ?> etapas concluídas na sua jornada.</p>
+            <?php endif; ?>
+        </section>
+    </main>
 </body>
 </html>

@@ -4,6 +4,16 @@ $questoes = $questoes ?? [];
 $areaLabel = $this->questaoService->getAreaLabel($area);
 $totalQuestoes = count($questoes);
 $resultado = $resultado ?? null;
+$formatarExpressao = static function (string $texto): string {
+    $textoSeguro = htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
+    $textoSeguro = preg_replace('/\^(-?\d+)/', '<sup>$1</sup>', $textoSeguro);
+
+    return str_replace(
+        [' * ', ' / ', '-infinito', 'infinito'],
+        [' &times; ', ' &divide; ', '-&infin;', '&infin;'],
+        $textoSeguro
+    );
+};
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -47,6 +57,7 @@ $resultado = $resultado ?? null;
         .question-number strong { color:#9b4dff; font-size:1.05rem; }
         .subject-tag { padding:7px 12px; border:1px solid var(--purple); border-radius:6px; color:#c68bff; font-size:.76rem; }
         .question-text { max-width:800px; margin:0 0 22px; font-size:1rem; font-weight:400; line-height:1.65; }
+        .question-text sup,.answer-option sup { font-size:.72em; line-height:0; }
         .answer-list { display:grid; gap:9px; }
         .answer-option { position:relative; display:flex; align-items:center; gap:14px; min-height:44px; padding:9px 14px; border:1px solid rgba(255,255,255,.2); border-radius:7px; cursor:pointer; color:var(--soft); transition:border-color .18s,background .18s,transform .18s; }
         .answer-option:hover { border-color:#8e3fff; background:rgba(123,34,237,.1); transform:translateX(2px); }
@@ -95,16 +106,16 @@ $resultado = $resultado ?? null;
         <div class="progress-panel"><div class="progress-top"><span class="progress-label">Progresso da prova</span><strong><span id="answered-count">0</span> de <?= $totalQuestoes ?> respondidas</strong></div><div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div><div class="progress-bottom"><span id="progress-percent">0% concluído</span><span><?= $totalQuestoes ?> questões</span></div></div>
     </header>
     <?php if ($resultado !== null): ?><div class="result-banner">Simulado finalizado: <?= (int) $resultado['acertos'] ?> de <?= (int) $resultado['total'] ?> questões corretas (<?= (int) $resultado['percentual'] ?>%).</div><?php endif; ?>
-    <form id="exam-form" method="post" action="<?= app_route('/aluno/simulados') ?>&area=<?= urlencode($area) ?>">
+    <form id="exam-form" method="post" action="<?= app_route('/aluno/simulados') ?>&amp;area=<?= urlencode($area) ?>&amp;iniciar=1">
         <div class="exam-layout">
             <section class="question-panel" aria-label="Questões do simulado">
                 <?php foreach ($questoes as $indice => $questao): ?>
                     <article class="question-step<?= $indice === 0 ? ' is-active' : '' ?>" data-question="<?= $indice ?>">
                         <div class="question-meta"><span class="question-number">Questão <strong><?= str_pad((string) ($indice + 1), 2, '0', STR_PAD_LEFT) ?></strong> de <?= $totalQuestoes ?></span><span class="subject-tag">Álgebra</span></div>
-                        <h2 class="question-text"><?= htmlspecialchars($questao['enunciado']) ?></h2>
+                        <h2 class="question-text"><?= $formatarExpressao($questao['enunciado']) ?></h2>
                         <div class="answer-list">
                             <?php foreach ($questao['alternativas'] as $alternativaIndice => $alternativa): ?>
-                                <label class="answer-option" data-option="<?= $alternativaIndice ?>"><input type="radio" name="respostas[<?= $indice ?>]" value="<?= $alternativaIndice ?>"><span class="answer-letter"><?= chr(65 + $alternativaIndice) ?></span><span><?= htmlspecialchars($alternativa) ?></span></label>
+                                <label class="answer-option" data-option="<?= $alternativaIndice ?>"><input type="radio" name="respostas[<?= $indice ?>]" value="<?= $alternativaIndice ?>"><span class="answer-letter"><?= chr(65 + $alternativaIndice) ?></span><span><?= $formatarExpressao($alternativa) ?></span></label>
                             <?php endforeach; ?>
                         </div>
                         <div class="question-actions"><button class="exam-button" type="button" data-action="previous">&larr; Anterior</button><button class="review-toggle" type="button" data-action="review">&#9873; Marcar para revisão</button><?php if ($indice < $totalQuestoes - 1): ?><button class="exam-button primary" type="button" data-action="next">Próxima &rarr;</button><?php else: ?><button class="exam-button primary" type="submit">Finalizar simulado</button><?php endif; ?></div>
