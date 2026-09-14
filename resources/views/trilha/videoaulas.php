@@ -4,198 +4,363 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Videoaulas - Álgebra</title>
-  <link rel="stylesheet" type="text/css" href="<?= app_asset('css/estilo_homepage.css') ?>">
+  <link rel="stylesheet" type="text/css" href="<?= app_asset('css/estilo_homepage.css') ?>?v=30">
   <style>
-    .video-wrap{
+    body.video-page {
       position: relative;
-      width: 1100px;
-      max-width: 95vw;
-      margin: 120px auto 60px;
-      z-index: 20;
-      color: #fff;
+      display: block;
+      min-height: 100svh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: #02050a url("<?= app_asset('images/home/background.png') ?>") center top / cover fixed;
+      color: #edf3ff;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    .video-title{
-      text-align: center;
-      margin-bottom: 22px;
-    }
-
-    .video-title h1{
-      font-size: 2.1em;
-      font-weight: 300;
-      text-shadow: 0 0 20px rgba(87, 24, 204, 0.5);
-    }
-
-    .video-title p{
-      margin-top: 10px;
-      opacity: 0.9;
-      font-size: 1.08em;
-      line-height: 1.6;
-    }
-
-    .video-grid{
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 18px;
-    }
-
-    .video-card{
-      cursor: pointer;
-      border-radius: 12px;
-      border: 2px solid rgba(255,255,255,0.85);
-      background: rgba(0,0,0,0.25);
-      backdrop-filter: blur(6px);
-      padding: 18px 16px;
-      box-shadow: 0 0 25px rgba(87, 24, 204, 0.15);
-      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
-      min-height: 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .video-card::after{
-      content: '';
-      position: absolute;
-      inset: -40px;
-      background: radial-gradient(circle at 30% 20%, rgba(87,24,204,0.35), transparent 55%);
-      opacity: 0;
-      transition: opacity .22s ease;
+    body.video-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(28, 77, 202, .18), transparent 22%),
+        linear-gradient(180deg, rgba(0, 2, 6, .15), rgba(0, 2, 7, .74) 72%, #010205 100%);
       pointer-events: none;
     }
 
-    .video-card:hover{
-      transform: translateY(-6px);
-      border-color: #5718cc;
-      box-shadow: 0 12px 30px rgba(87, 24, 204, 0.35);
+    body.video-page::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,.9), transparent),
+        radial-gradient(2px 2px at 80px 65px, rgba(255,255,255,.8), transparent),
+        radial-gradient(1.5px 1.5px at 150px 40px, rgba(255,255,255,.9), transparent),
+        radial-gradient(1.5px 1.5px at 210px 100px, rgba(255,255,255,.8), transparent),
+        radial-gradient(2px 2px at 270px 40px, rgba(255,255,255,.9), transparent),
+        radial-gradient(2px 2px at 340px 190px, rgba(255,255,255,.75), transparent),
+        radial-gradient(1px 1px at 420px 120px, rgba(255,255,255,.9), transparent),
+        radial-gradient(2px 2px at 500px 80px, rgba(255,255,255,.7), transparent),
+        radial-gradient(1.5px 1.5px at 700px 90px, rgba(255,255,255,.8), transparent),
+        radial-gradient(1.5px 1.5px at 880px 160px, rgba(255,255,255,.8), transparent);
+      background-repeat: repeat;
+      background-size: 980px 360px;
+      animation: video-stars 30s linear infinite;
+      opacity: .8;
     }
 
-    .video-card:hover::after{ opacity: 1; }
+    @keyframes video-stars {
+      from { transform: translateY(0); }
+      to { transform: translateY(-120px); }
+    }
 
-    .video-top{
+    .video-page .home-nav {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr) 120px;
+      align-items: center;
+      width: 100%;
+      min-height: 64px;
+      padding: 10px 28px 0;
+      background: transparent;
+    }
+
+    .video-page .home-nav-links,
+    .video-page .home-nav-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .video-page .home-nav-links a,
+    .video-page .home-nav-actions a,
+    .video-page .home-return {
+      color: rgba(233, 239, 255, .85);
+      text-decoration: none;
+      font-size: .8rem;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: .01em;
+      transition: color .18s ease, transform .18s ease;
+    }
+
+    .video-page .home-nav-links a:hover,
+    .video-page .home-nav-links a:focus-visible,
+    .video-page .home-return:hover,
+    .video-page .home-return:focus-visible,
+    .video-page .home-nav-actions a:hover,
+    .video-page .home-nav-actions a:focus-visible {
+      color: #fff;
+      outline: none;
+    }
+
+    .video-page .home-nav-links a.is-active {
+      color: #fff;
+      text-shadow: 0 0 12px rgba(121, 151, 255, .8);
+    }
+
+    .video-page .home-logo {
+      display: inline-flex;
+      width: 118px;
+      height: 36px;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: visible;
+    }
+
+    .video-page .home-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 18px rgba(103, 134, 255, .35));
+    }
+
+    .video-page .home-return {
+      justify-self: start;
+      text-align: left;
+      margin-left: 8px;
+    }
+
+    .video-page .home-nav-actions {
+      justify-content: flex-end;
+    }
+
+    .video-page .home-nav-actions a {
+      padding: 10px 20px;
+      border: 1px solid rgba(103, 134, 255, .7);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #3d3ac7, #1f3b9f);
+      box-shadow: inset 0 1px rgba(255,255,255,.25), 0 0 20px rgba(93, 110, 255, .22);
+      color: #eff5ff;
+    }
+
+    .video-wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1140px, calc(100% - 48px));
+      margin: 42px auto 60px;
+      color: #fff;
+    }
+
+    .video-title {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .video-title h1 {
+      margin: 0;
+      font-size: clamp(2rem, 2.6vw, 3.1rem);
+      font-weight: 700;
+      letter-spacing: -.045em;
+      color: #f3f7ff;
+      text-shadow: 0 0 18px rgba(124, 154, 255, .2);
+    }
+
+    .video-title p {
+      margin: 12px auto 0;
+      max-width: 540px;
+      color: rgba(222, 232, 255, .78);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 18px;
+    }
+
+    .video-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 210px;
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(108, 141, 255, .48);
+      border-radius: 16px;
+      background: linear-gradient(160deg, rgba(10, 20, 40, .92), rgba(4, 8, 22, .8));
+      box-shadow: inset 0 1px rgba(176, 205, 255, .08), 0 18px 34px rgba(8, 18, 42, .28);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .video-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 10% 20%, rgba(94, 124, 255, .2), transparent 28%);
+      pointer-events: none;
+    }
+
+    .video-card:hover,
+    .video-card:focus-visible {
+      transform: translateY(-4px);
+      border-color: rgba(134, 168, 255, .8);
+      box-shadow: 0 20px 38px rgba(35, 74, 183, .28), inset 0 1px rgba(191, 212, 255, .12);
+      outline: none;
+    }
+
+    .video-top {
+      position: relative;
+      z-index: 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      position: relative;
-      z-index: 1;
     }
 
-    .video-badge{
-      display: flex;
+    .video-badge {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 46px;
-      height: 46px;
+      width: 52px;
+      height: 52px;
+      border: 1px solid rgba(132, 171, 255, .5);
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.7);
-      background: linear-gradient(45deg, rgba(0,0,46,0.55), rgba(87,24,204,0.25));
-      font-size: 1.25em;
+      background: linear-gradient(135deg, rgba(70, 87, 255, .32), rgba(90, 138, 255, .12));
+      color: #ebf4ff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      box-shadow: inset 0 1px rgba(255,255,255,.1);
     }
 
-    .video-level{
-      font-size: .95em;
-      opacity: 0.95;
-      color: rgba(255,255,255,0.9);
+    .video-level {
+      color: rgba(222, 232, 255, .82);
+      font-size: .68rem;
+      letter-spacing: .02em;
       white-space: nowrap;
     }
 
-    .video-name{
-      font-size: 1.28em;
-      font-weight: 400;
+    .video-name {
       position: relative;
       z-index: 1;
+      margin-top: 16px;
+      color: #f4f8ff;
+      font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
     }
 
-    .video-desc{
-      opacity: 0.9;
-      font-weight: 300;
-      line-height: 1.5;
-      font-size: 0.98em;
+    .video-desc {
       position: relative;
       z-index: 1;
-      margin-top: -4px;
+      margin-top: 8px;
+      color: rgba(204, 219, 255, .8);
+      font-size: .92rem;
+      line-height: 1.55;
+      min-height: 58px;
     }
 
-    .video-actions{
-      margin-top: auto;
+    .video-actions {
       position: relative;
       z-index: 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 16px;
     }
 
-    .video-pill{
+    .video-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid rgba(130, 169, 255, .52);
       border-radius: 999px;
-      padding: 8px 12px;
-      border: 1px solid rgba(255,255,255,0.65);
-      background: rgba(255,255,255,0.06);
-      font-size: .92em;
-      opacity: 0.95;
-      font-weight: 300;
+      background: rgba(89, 118, 255, .12);
+      color: #ebf4ff;
+      font-size: .7rem;
+      font-weight: 600;
       white-space: nowrap;
     }
 
-    .video-link{
-      color: #fff;
+    .video-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 90px;
+      padding: 9px 16px;
+      border: 1px solid rgba(125, 169, 255, .75);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #4d6aff 0%, #2b4bd6 100%);
+      color: #edf3ff;
       text-decoration: none;
-      border-radius: 6px;
-      padding: 10px 14px;
-      border: 1px solid rgba(255,255,255,0.75);
-      background: rgba(0,0,0,0.18);
-      box-shadow: 0 2px 0 #1b0754, 0 5px 10px rgba(0,0,0,.3);
-      font-weight: 300;
-      transition: transform .18s ease, border-color .18s ease;
-      white-space: nowrap;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .01em;
+      box-shadow: inset 0 1px rgba(255,255,255,.35), 0 6px 0 rgba(23, 39, 118, .95), 0 12px 22px rgba(53, 86, 219, .32);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
     }
 
-    .video-card:hover .video-link{
-      border-color: #5718cc;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 0 #1b0754, 0 7px 12px rgba(87,24,204,.25);
+    .video-card:hover .video-link,
+    .video-link:hover,
+    .video-link:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: inset 0 1px rgba(255,255,255,.38), 0 8px 0 rgba(23, 39, 118, .95), 0 16px 24px rgba(53, 86, 219, .34);
+      filter: brightness(1.04);
+      outline: none;
     }
 
     .video-link:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #1b0754, 0 3px 6px rgba(0,0,0,.25);
+      transform: translateY(4px);
+      box-shadow: inset 0 1px rgba(255,255,255,.2), 0 2px 0 rgba(23, 39, 118, .95), 0 8px 14px rgba(53, 86, 219, .26);
     }
 
-    @media (max-width: 980px){
-      .video-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (max-width: 980px) {
+      .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    @media (max-width: 640px){
-      .video-grid{ grid-template-columns: 1fr; }
-      .video-wrap{ margin-top: 110px; }
-      .video-title h1{ font-size: 1.8em; }
+    @media (max-width: 760px) {
+      .video-page .home-nav {
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 12px 18px 0;
+      }
+
+      .video-page .home-nav-links {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        gap: 18px;
+        overflow-x: auto;
+      }
+
+      .video-page .home-nav-links a,
+      .video-page .home-return,
+      .video-page .home-nav-actions a {
+        font-size: .72rem;
+      }
+
+      .video-wrap { width: min(92vw, 620px); }
+      .video-card { min-height: 190px; }
+    }
+
+    @media (max-width: 620px) {
+      .video-grid { grid-template-columns: 1fr; }
+      .video-wrap { margin-top: 28px; }
+      .video-title p { max-width: 420px; }
     }
   </style>
 </head>
-<body>
-  <nav>
-    <div class="left">
-      <ul>
-        <li><a href="<?= app_route('/') ?>">Home</a></li>
-      </ul>
+<body class="video-page">
+  <nav class="home-nav" aria-label="Navegação principal">
+    <a class="home-return" href="<?= app_route('/') ?>">Home</a>
+    <div class="home-nav-links">
+      <a href="<?= app_route('/') ?>">Trilha de aprendizado</a>
+      <a href="<?= app_route('/videoaulas') ?>" class="is-active">Videoaulas</a>
+      <a href="<?= app_route('/aluno/simulados') ?>">Simulados</a>
+      <a href="<?= app_route('/ranking') ?>">Ranking</a>
+      <a href="<?= app_route('/') ?>#sobre">Sobre</a>
     </div>
-    <div class="center">
-      <ul>
-        <li><a href="<?= app_route('/') ?>">Trilha de aprendizado</a></li>
-        <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
-        <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
-        <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
-        <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
-      </ul>
-    </div>
-    <div class="right">
-      <ul>
-        <li><a href="<?= app_route('/login') ?>">Login</a></li>
-      </ul>
+    <div class="home-nav-actions">
+      <a href="<?= app_route('/login') ?>">Login</a>
     </div>
   </nav>
 

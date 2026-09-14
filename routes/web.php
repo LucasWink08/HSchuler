@@ -13,6 +13,8 @@ return [
     '/auth/register-aluno-submit' => function () { (new AuthController())->registerAlunoSubmit(); },
     '/auth/register-professor-submit' => function () { (new AuthController())->registerProfessorSubmit(); },
     '/videoaulas' => APP_ROOT . '/resources/views/trilha/videoaulas.php',
+    '/sobre' => APP_ROOT . '/resources/views/layouts/sobre.php',
+    '/trilhas' => APP_ROOT . '/resources/views/trilha/escolher.php',
     '/ranking' => APP_ROOT . '/resources/views/ranking/ranking.php',
     '/listar' => APP_ROOT . '/resources/views/aluno/listar.php',
     '/aluno/dashboard' => function () { (new AlunoController())->dashboard(); },

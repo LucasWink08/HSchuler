@@ -68,7 +68,7 @@ $areas = [
         </a>
         <div class="home-nav-links">
             <div class="trilha-dropdown">
-                <button class="trilha-trigger is-active" type="button" aria-expanded="false" aria-controls="trilha-menu">Trilha de aprendizado <span aria-hidden="true">⌄</span></button>
+                <button class="trilha-trigger is-active" type="button" aria-expanded="false" aria-controls="trilha-menu">Trilha de aprendizado</button>
                 <div class="trilha-menu" id="trilha-menu">
                     <?php foreach ($areas as $area): ?>
                         <a href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>" data-auth-required><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></a>
@@ -78,11 +78,14 @@ $areas = [
             <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>
             <a href="<?= app_route('/aluno/simulados') ?>" data-auth-required>Simulados</a>
             <a href="<?= app_route('/ranking') ?>">Ranking</a>
-            <a href="#sobre">Sobre</a>
+            <a href="<?= app_route('/sobre') ?>">Sobre</a>
         </div>
         <div class="home-nav-actions">
             <?php if ($estaLogado): ?>
-                <span class="account-link welcome-account">Bem-vindo, <strong><?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                <div class="account-link user-profile">
+                    <span class="profile-dot" aria-hidden="true"></span>
+                    <strong><?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></strong>
+                </div>
                 <button class="nav-cta logout-trigger" type="button" aria-haspopup="dialog" aria-controls="logout-modal">Sair</button>
             <?php else: ?>
                 <a class="account-link" href="<?= app_route('/login') ?>"><span aria-hidden="true">&#9787;</span>Login</a>
