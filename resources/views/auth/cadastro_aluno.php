@@ -4,27 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cadastro</title>
-    <link rel="stylesheet" type="text/css" href="estilo_cadastro.css">
+    <link rel="stylesheet" type="text/css" href="<?= app_asset('css/estilo_cadastro.css') ?>">
 </head>
 <body>
 <nav>
   <div class="left">
     <ul>
-      <li><a href="login.php">Home</a></li>
+      <li><a href="<?= app_route('/') ?>">Home</a></li>
     </ul>
   </div>
   <div class="center">
     <ul>
-      <li><a href="#">Aprendizado</a></li>
-      <li><a href="#">Videoaulas</a></li>
-      <li><a href="#">Simulados</a></li>
-      <li><a href="#">Ranking</a></li>
-      <li><a href="#">Sobre</a></li>
+      <li><a href="<?= app_route('/') ?>">Trilha de aprendizado</a></li>
+      <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
+      <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
+      <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
+      <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
     </ul>
   </div>
   <div class="right">
     <ul>
-      <li><a href="login.php">Login</a></li>
+      <li><a href="<?= app_route('/login') ?>">Login</a></li>
     </ul>
   </div>
 </nav>
@@ -32,7 +32,7 @@
     <i style="--clr:#00002e;"></i>
     <i style="--clr:#ffffff;"></i>
     <i style="--clr:#00002e;"></i>
-  <form class="login" method="POST" action="processa_cadastro.php">
+  <form class="login" method="POST" action="<?= APP_URL ?>/index.php?route=/auth/register-aluno-submit">
         <h2>Cadastro</h2>
         <div class="inputBx">
           <input type="text" name="nome" placeholder="Usuario" required>
@@ -53,10 +53,10 @@
           <input type="submit" value="Criar conta">
         </div>
         <div class="links">
-          <a href="login.php">Já possui conta? Faça login</a>
+          <a href="<?= APP_URL ?>/index.php?route=/login">Já possui conta? Faça login</a>
         </div>
   </form>
 </div>
-<script src="javascript.js"></script>
+<script src="<?= ASSET_URL ?>/js/javascript.js"></script>
 </body>
 </html>

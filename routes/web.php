@@ -1,0 +1,25 @@
+<?php
+
+return [
+    '/' => APP_ROOT . '/resources/views/layouts/home.php',
+    '/login' => function () { (new AuthController())->loginForm(); },
+    '/auth/login-submit' => function () { (new AuthController())->loginSubmit(); },
+    '/auth/logout' => function () { (new AuthController())->logout(); },
+    '/cadastro/aluno' => APP_ROOT . '/resources/views/auth/cadastro_aluno.php',
+    '/cadastro/professor' => APP_ROOT . '/resources/views/auth/cadastro_professor.php',
+    '/cadastro' => APP_ROOT . '/resources/views/auth/escolha_cadastro.php',
+    '/auth/register-aluno-submit' => function () { (new AuthController())->registerAlunoSubmit(); },
+    '/auth/register-professor-submit' => function () { (new AuthController())->registerProfessorSubmit(); },
+    '/videoaulas' => APP_ROOT . '/resources/views/trilha/videoaulas.php',
+    '/ranking' => APP_ROOT . '/resources/views/ranking/ranking.php',
+    '/listar' => APP_ROOT . '/resources/views/aluno/listar.php',
+    '/aluno/dashboard' => function () { (new AlunoController())->dashboard(); },
+    '/aluno/trilha' => function () { (new AlunoController())->trilha(); },
+    '/aluno/questoes' => function () { (new AlunoController())->questoes(); },
+    '/aluno/simulados' => function () { (new AlunoController())->simulados(); },
+    '/aluno/ranking' => function () { (new AlunoController())->ranking(); },
+    '/professor/dashboard' => function () { (new ProfessorController())->dashboard(); },
+    '/professor/videos' => function () { (new ProfessorController())->videos(); },
+    '/professor/atividades' => function () { (new ProfessorController())->atividades(); },
+    '/professor/gerador-questoes' => function () { (new ProfessorController())->geradorQuestoes(); },
+];

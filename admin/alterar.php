@@ -1,5 +1,5 @@
 <?php
-include 'conexao_inc.php';
+require __DIR__ . '/../includes/conexao_inc.php';
 
 $titulo = isset($_POST['titulo']) ? $_POST['titulo'] : '';
 $descricao = isset($_POST['descricao']) ? $_POST['descricao'] : '';

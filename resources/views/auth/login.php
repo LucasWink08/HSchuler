@@ -4,27 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - HSchuler</title>
-    <link rel="stylesheet" type="text/css" href="estilo_login.css">
+    <link rel="stylesheet" type="text/css" href="<?= ASSET_URL ?>/css/estilo_login.css">
 </head>
 <body>
 <nav>
   <div class="left">
     <ul>
-      <li><a href="index.php">Home</a></li>
+      <li><a href="<?= app_route('/') ?>">Home</a></li>
     </ul>
   </div>
   <div class="center">
     <ul>
-      <li><a href="#">Aprendizado</a></li>
-      <li><a href="#">Videoaulas</a></li>
-      <li><a href="#">Simulados</a></li>
-      <li><a href="#">Ranking</a></li>
-      <li><a href="#">Sobre</a></li>
+      <li><a href="<?= app_route('/') ?>">Trilha de aprendizado</a></li>
+      <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
+      <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
+      <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
+      <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
     </ul>
   </div>
   <div class="right">
     <ul>
-      <li><a href="#">Login</a></li>
+      <li><a href="<?= app_route('/login') ?>">Login</a></li>
     </ul>
   </div>
 </nav>
@@ -38,8 +38,11 @@
     if (isset($_GET['auth_error'])) {
         echo '<div class="error-message">' . htmlspecialchars($_GET['auth_error']) . '</div>';
     }
+    if (isset($_GET['success'])) {
+        echo '<div class="success-message">' . htmlspecialchars($_GET['success']) . '</div>';
+    }
     ?>
-    <form action="processa_login.php" method="post">
+    <form action="<?= APP_URL ?>/index.php?route=/auth/login-submit" method="post">
           <div class="inputBx">
             <input type="text" placeholder="Usuario" name="usuario" required>
           </div>
@@ -50,15 +53,15 @@
             <input type="submit" value="Entrar">
           </div>
           <div class="links">
-            <a href="#">Esqueceu sua senha</a>
-            <a href="escolha_cadastro.php" class="signup-trigger">Faça seu cadastro</a>
+            <a href="<?= app_route('/login') ?>">Esqueceu sua senha</a>
+            <a href="<?= APP_URL ?>/index.php?route=/cadastro" class="signup-trigger">Faça seu cadastro</a>
           </div>
           <div class="signup-dropdown">
-            <p>Faça login para acessar o cadastro ou <a href="#">clique aqui</a> para criar uma conta.</p>
+            <p>Faça login para acessar o cadastro ou <a href="<?= app_route('/cadastro') ?>">clique aqui</a> para criar uma conta.</p>
           </div>
     </form>
   </div>
 </div>
-<script src="javascript.js"></script>
+<script src="<?= ASSET_URL ?>/js/javascript.js"></script>
 </body>
 </html>

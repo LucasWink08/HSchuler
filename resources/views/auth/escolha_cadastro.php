@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Escolha do Cadastro</title>
-  <link rel="stylesheet" type="text/css" href="estilo_cadastro.css">
+  <link rel="stylesheet" type="text/css" href="<?= app_asset('css/estilo_cadastro.css') ?>">
   <style>
     .escolha-container{
       position: relative;
@@ -80,7 +80,8 @@
       display: inline-block;
       width: 100%;
       padding: 12px 18px;
-      border-radius: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 0 #1b0754, 0 8px 16px rgba(0,0,0,.35);
       background: linear-gradient(45deg, #00002e, #5718cc);
       color: #fff;
       text-decoration: none;
@@ -89,8 +90,9 @@
     }
 
     .card .btn:hover{
-      transform: scale(1.03);
+      transform: translateY(-2px);
       filter: brightness(1.1);
+      box-shadow: 0 6px 0 #1b0754, 0 12px 20px rgba(87,24,204,.32);
     }
 
     @media (max-width: 720px){
@@ -103,21 +105,21 @@
   <nav>
     <div class="left">
       <ul>
-        <li><a href="login.php">Home</a></li>
+        <li><a href="<?= app_route('/') ?>">Home</a></li>
       </ul>
     </div>
     <div class="center">
       <ul>
-        <li><a href="#">Aprendizado</a></li>
-        <li><a href="#">Videoaulas</a></li>
-        <li><a href="#">Simulados</a></li>
-        <li><a href="#">Ranking</a></li>
-        <li><a href="#">Sobre</a></li>
+        <li><a href="<?= app_route('/') ?>">Trilha de aprendizado</a></li>
+        <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
+        <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
+        <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
+        <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
       </ul>
     </div>
     <div class="right">
       <ul>
-        <li><a href="login.php">Login</a></li>
+        <li><a href="<?= app_route('/login') ?>">Login</a></li>
       </ul>
     </div>
   </nav>
@@ -133,7 +135,7 @@
           <li>Assistir vídeos</li>
           <li>Participar no ranking!</li>
         </ul>
-        <a class="btn" href="cadastro_aluno.php">Cadastrar</a>
+        <a class="btn" href="<?= app_route('/cadastro/aluno') ?>">Cadastrar</a>
       </div>
 
       <div class="card">
@@ -143,7 +145,7 @@
           <li>Criar simulados</li>
           <li>Gerenciar alunos</li>
         </ul>
-        <a class="btn" href="cadastro_professor.php">Cadastrar</a>
+        <a class="btn" href="<?= app_route('/cadastro/professor') ?>">Cadastrar</a>
       </div>
     </div>
   </div>

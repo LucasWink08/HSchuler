@@ -1,0 +1,11 @@
+{
+  "name": "hschuler/app",
+  "description": "Sistema HSchuler em arquitetura MVC simplificada",
+  "type": "project",
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+}

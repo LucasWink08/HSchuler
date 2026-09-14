@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listar Usuários - HSchuler</title>
-    <link rel="stylesheet" href="estilo_listar.css">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_listar.css') ?>">
 </head>
 <body>
 <?php
 
-include 'conexao_inc.php';
+require __DIR__ . '/includes/conexao_inc.php';
 $conexao = new PDO(dsn,usuario,senha);
 $sql = "SELECT id, usuario, email, data_nasc FROM usuario ORDER BY id DESC";
 $comando = $conexao->prepare($sql);
@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['filtro']) && !empty($_G
 ?>
 <nav>
   <ul>
-    <li><a href="homepage.php">Home</a></li>
-    <li><a href="listar.php">Listar</a></li>
+    <li><a href="<?= app_route('/') ?>">Home</a></li>
+    <li><a href="<?= app_route('/listar') ?>">Listar</a></li>
   </ul>
 </nav>
 <div class="container">
