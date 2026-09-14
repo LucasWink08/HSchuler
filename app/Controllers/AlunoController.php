@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 class AlunoController
 {
@@ -14,6 +14,7 @@ class AlunoController
     public function dashboard(): void
     {
         $this->requireAluno();
+        $resumo = $this->trilhaService->getResumo($this->getAlunoId());
         require APP_ROOT . '/resources/views/aluno/dashboard.php';
     }
 
@@ -24,6 +25,47 @@ class AlunoController
         require APP_ROOT . '/resources/views/aluno/trilha.php';
     }
 
+    public function etapa(): void
+    {
+        $this->requireAluno();
+        $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
+        $etapaId = filter_var($_GET['etapa_id'] ?? null, FILTER_VALIDATE_INT);
+        $etapaNome = trim((string) ($_GET['etapa'] ?? ''));
+        $alunoId = $this->getAlunoId();
+        $etapas = $this->trilhaService->getEtapas($area);
+        $etapa = null;
+        foreach ($etapas as $item) {
+            $idCorresponde = $etapaId !== false && $etapaId !== null && (int) $item['id'] === (int) $etapaId;
+            $nomeCorresponde = $etapaNome !== ''
+                && $this->trilhaService->normalizarIdentificador((string) $item['nome'])
+                    === $this->trilhaService->normalizarIdentificador($etapaNome);
+            if ($idCorresponde || $nomeCorresponde) {
+                $etapa = $item;
+                break;
+            }
+        }
+        if ($etapa === null || $alunoId === null) { http_response_code(404); echo 'Etapa não encontrada.'; return; }
+        $estados = $this->trilhaService->getEstadosEtapas($alunoId, $area);
+        $estado = $estados[$this->trilhaService->normalizarIdentificador((string) $etapa['nome'])] ?? 'locked';
+        if ($estado === 'locked') { http_response_code(403); echo 'Conclua a etapa anterior para desbloquear esta atividade.'; return; }
+        $etapa['nome'] = $this->trilhaService->getNomeEtapaDaArea($area, (int) $etapa['ordem_num']);
+        $questoes = $this->questaoService->getQuestoesDaEtapa($area, (string) $etapa['nome']);
+        $resultado = null;
+        $erroFormulario = null;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $respostas = $_POST['respostas'] ?? [];
+            $validas = is_array($respostas) && count($respostas) === 5;
+            foreach ((array) $respostas as $resposta) $validas = $validas && is_scalar($resposta) && in_array((string) $resposta, ['0','1','2','3'], true);
+            if (!$validas || count($questoes) !== 5) {
+                $erroFormulario = 'Responda às cinco questões antes de finalizar.';
+            } else {
+                $resultado = $this->trilhaService->concluirEtapa($alunoId, (int) $etapa['id'], $respostas, $questoes);
+                if ($resultado === null) $erroFormulario = 'Não foi possível concluir esta etapa. Atualize a trilha e tente novamente.';
+            }
+        }
+        $resumo = $this->trilhaService->getResumo($alunoId, $area);
+        require APP_ROOT . '/resources/views/aluno/etapa.php';
+    }
     public function simulados(): void
     {
         $this->requireAluno();
@@ -145,3 +187,5 @@ class AlunoController
         return $alunoId !== false && $alunoId !== null && $alunoId > 0 ? $alunoId : null;
     }
 }
+
+

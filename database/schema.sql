@@ -172,3 +172,16 @@ CREATE INDEX idx_atividade_assunto ON atividade(assunto_id);
 CREATE INDEX idx_progresso_aluno ON progresso_aluno(aluno_id);
 CREATE INDEX idx_ranking_xp ON ranking(xp_total DESC);
 CREATE INDEX idx_streak_aluno ON streak(aluno_id);
+
+CREATE TABLE IF NOT EXISTS tentativa_etapa_trilha (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id INT NOT NULL,
+    etapa_id INT NOT NULL,
+    acertos TINYINT UNSIGNED NOT NULL,
+    erros TINYINT UNSIGNED NOT NULL,
+    xp_recebido TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    concluida_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (aluno_id) REFERENCES aluno(id),
+    FOREIGN KEY (etapa_id) REFERENCES etapa_trilha(id),
+    INDEX idx_tentativa_etapa_aluno (aluno_id, etapa_id)
+);

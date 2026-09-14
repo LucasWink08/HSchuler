@@ -32,6 +32,17 @@ $nivel = $resumo['nivel'] ?? 1;
 $streak = $resumo['streak_atual'];
 $etapasConcluidas = $resumo['etapas_concluidas'];
 $totalEtapas = $resumo['total_etapas'];
+$progressaoNivel = [
+    'nivel' => 1,
+    'inicio' => 0,
+    'fim' => 50,
+    'percentual' => 0,
+    'xp_restante' => 50,
+];
+if ($alunoLogado) {
+    $progressaoNivel = $trilhaService->getProgressaoNivel((int) ($xp ?? 0));
+    $nivel = $progressaoNivel['nivel'];
+}
 $areas = [
     ['id' => 'potenciacao', 'titulo' => 'Potenciação', 'icone' => 'a<sup>2</sup>', 'nivel' => 'Iniciante', 'cor' => 'blue'],
     ['id' => 'fracoes-algebricas', 'titulo' => 'Frações algébricas', 'icone' => '<span>x</span><small>y</small>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
@@ -47,7 +58,7 @@ $areas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=28">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=29">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body class="home-page">
@@ -135,7 +146,16 @@ $areas = [
                     <strong><?= $estaLogado ? 'Nível ' . (int) $nivel : 'Comece sua jornada' ?></strong>
                 </div>
             </div>
-            <div class="xp-row"><span><?= $estaLogado ? 'XP registrado: ' . ($xp ?? 0) : 'Entre para registrar XP' ?></span></div>
+            <div class="xp-row">
+                <span><?= $estaLogado ? 'XP registrado: ' . ($xp ?? 0) : 'Entre para registrar XP' ?></span>
+                <?php if ($alunoLogado): ?>
+                    <div class="level-progress" aria-label="<?= $progressaoNivel['percentual'] ?>% do nível <?= $nivel ?>">
+                        <div class="level-progress-label"><span><?= $progressaoNivel['inicio'] ?> XP</span><strong><?= $xp ?? 0 ?> / <?= $progressaoNivel['fim'] ?> XP</strong></div>
+                        <span class="level-progress-track"><i style="--level-progress:<?= $progressaoNivel['percentual'] ?>%"></i></span>
+                        <small><?= $nivel < 5 ? $progressaoNivel['xp_restante'] . ' XP para o nível ' . ($nivel + 1) : 'Nível máximo alcançado nesta trilha' ?></small>
+                    </div>
+                <?php endif; ?>
+            </div>
             <div class="profile-stats">
                 <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $estaLogado && $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
                 <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>

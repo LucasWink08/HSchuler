@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $area = $area ?? 'potenciacao';
 
 $conteudos = [
@@ -23,13 +23,19 @@ $layoutNos = [
 $alunoId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
 $alunoId = $alunoId !== false && $alunoId !== null && $alunoId > 0 ? (int) $alunoId : null;
 $trilhaService = new TrilhaService();
-$resumo = $trilhaService->getResumo($alunoId);
-$estadosEtapas = $alunoId === null ? [] : $trilhaService->getEstadosEtapas($alunoId);
+$resumo = $trilhaService->getResumo($alunoId, $area);
+$etapasBanco = $trilhaService->getEtapas($area);
+$estadosEtapas = $alunoId === null ? [] : $trilhaService->getEstadosEtapas($alunoId, $area);
 $nos = [];
-
 foreach ($layoutNos as $indice => $no) {
-    $identificador = $trilhaService->normalizarIdentificador($conteudo['etapas'][$indice]);
-    $no['estado'] = $estadosEtapas[$identificador] ?? 'locked';
+    $etapaBanco = $etapasBanco[$indice] ?? null;
+    $nomeBanco = $etapaBanco['nome'] ?? '';
+    $nomeEtapa = $etapaBanco !== null
+        ? $trilhaService->getNomeEtapaDaArea($area, (int) $etapaBanco['ordem_num'])
+        : html_entity_decode($conteudo['etapas'][$indice], ENT_QUOTES, 'UTF-8');
+    $no['nome'] = $nomeEtapa;
+    $no['etapa_id'] = $etapaBanco['id'] ?? null;
+    $no['estado'] = $estadosEtapas[$trilhaService->normalizarIdentificador($nomeBanco)] ?? 'locked';
     $nos[] = $no;
 }
 
@@ -66,15 +72,15 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
     </header>
 
     <section class="path-layout" aria-label="Progresso de aprendizagem">
-        <aside class="path-streak" aria-label="Sequência diária">
+        <aside class="path-streak" aria-label="SequÃªncia diÃ¡ria">
             <section class="path-card">
-                <p class="card-eyebrow">Sequência diária</p>
+                <p class="card-eyebrow">SequÃªncia diÃ¡ria</p>
                 <h2>Seu ritmo</h2>
                 <?php if ($streakAtual === null): ?>
-                    <p class="path-card-copy" style="margin-top:10px">Entre para consultar a sequência registrada nas suas atividades.</p>
+                    <p class="path-card-copy" style="margin-top:10px">Entre para consultar a sequÃªncia registrada nas suas atividades.</p>
                 <?php else: ?>
                     <div class="streak-count"><span aria-hidden="true">&#128293;</span><strong><?= $streakAtual ?></strong><small>dias consecutivos</small></div>
-                    <div class="streak-stats"><div><span>Maior sequência</span><strong><?= $formatarDado($maiorStreak) ?> dias</strong></div><div><span>Dias registrados</span><strong><?= count($diasAtividade) ?></strong></div></div>
+                    <div class="streak-stats"><div><span>Maior sequÃªncia</span><strong><?= $formatarDado($maiorStreak) ?> dias</strong></div><div><span>Dias registrados</span><strong><?= count($diasAtividade) ?></strong></div></div>
                     <?php if ($diasAtividade === []): ?>
                         <p class="path-card-copy" style="margin-top:14px">Nenhuma atividade foi registrada ainda.</p>
                     <?php else: ?>
@@ -100,14 +106,14 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
                     </g>
                 </svg>
                 <?php foreach ($nos as $indice => $no): ?>
-                    <?php $podeAbrir = in_array($no['estado'], ['current', 'available'], true); ?>
-                    <button class="path-node <?= $no['estado'] ?>" type="button" style="--x:<?= $no['x'] ?>;--y:<?= $no['y'] ?>" aria-label="<?= strip_tags(html_entity_decode($conteudo['etapas'][$indice], ENT_QUOTES, 'UTF-8')) ?>"<?= $podeAbrir ? ' data-url="' . htmlspecialchars($urlExercicios, ENT_QUOTES, 'UTF-8') . '"' : ' disabled aria-disabled="true"' ?>><span class="node-circle" aria-hidden="true"><?= $no['icone'] ?></span><span class="node-tooltip"><?= $conteudo['etapas'][$indice] ?></span></button>
+                    <?php $podeAbrir = $no['etapa_id'] !== null && $no['estado'] !== 'locked'; $urlEtapa = app_route('/aluno/etapa') . '&area=' . urlencode($area) . '&etapa_id=' . (int) ($no['etapa_id'] ?? 0) . '&etapa=' . urlencode($no['nome']); ?>
+<button class="path-node <?= $no['estado'] ?>" type="button" style="--x:<?= $no['x'] ?>;--y:<?= $no['y'] ?>" aria-label="<?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?>"<?= $podeAbrir ? ' data-url="' . htmlspecialchars($urlEtapa, ENT_QUOTES, 'UTF-8') . '"' : ' disabled aria-disabled="true"' ?>><span class="node-circle" aria-hidden="true"><?= $no['icone'] ?></span><span class="node-tooltip"><?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?></span></button>
                 <?php endforeach; ?>
             </main>
-            <p class="path-note">O estado das etapas é carregado a partir do progresso registrado.</p>
+            <p class="path-note">O estado das etapas Ã© carregado a partir do progresso registrado.</p>
         </div>
 
-        <aside class="path-sidebar" aria-label="Informações de progresso">
+        <aside class="path-sidebar" aria-label="InformaÃ§Ãµes de progresso">
             <section class="path-card">
                 <p class="card-eyebrow">Unidade atual</p>
                 <h2><?= html_entity_decode($conteudo['titulo'], ENT_QUOTES, 'UTF-8') ?></h2>
@@ -116,22 +122,22 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
                 <?php elseif ($totalEtapas === 0): ?>
                     <p class="path-card-copy" style="margin-top:14px">Nenhuma etapa foi cadastrada no banco ainda.</p>
                 <?php else: ?>
-                    <div class="progress-label"><span><?= $formatarDado($etapasConcluidas) ?> de <?= $formatarDado($totalEtapas) ?> etapas concluídas</span><strong><?= $formatarDado($progresso) ?><?= $progresso === null ? '' : '%' ?></strong></div>
+                    <div class="progress-label"><span><?= $formatarDado($etapasConcluidas) ?> de <?= $formatarDado($totalEtapas) ?> etapas concluÃ­das</span><strong><?= $formatarDado($progresso) ?><?= $progresso === null ? '' : '%' ?></strong></div>
                     <div class="progress-bar" aria-label="Progresso registrado"><span style="--progress:<?= $progresso ?? 0 ?>%"></span></div>
                 <?php endif; ?>
             </section>
 
             <section class="path-card">
                 <h2>Legenda</h2>
-                <ul class="legend-list"><li><i class="legend-dot complete" aria-hidden="true"></i>Concluído</li><li><i class="legend-dot current" aria-hidden="true"></i>Atual</li><li><i class="legend-dot" aria-hidden="true"></i>Disponível</li><li><i class="legend-dot locked" aria-hidden="true"></i>Bloqueado</li><li><i class="legend-dot checkpoint" aria-hidden="true"></i>Desafio / checkpoint</li></ul>
+                <ul class="legend-list"><li><i class="legend-dot complete" aria-hidden="true"></i>ConcluÃ­do</li><li><i class="legend-dot current" aria-hidden="true"></i>Atual</li><li><i class="legend-dot" aria-hidden="true"></i>DisponÃ­vel</li><li><i class="legend-dot locked" aria-hidden="true"></i>Bloqueado</li><li><i class="legend-dot checkpoint" aria-hidden="true"></i>Desafio / checkpoint</li></ul>
             </section>
 
             <section class="path-card">
                 <h2>Seu progresso geral</h2>
                 <?php if ($alunoId === null): ?>
-                    <p class="path-card-copy" style="margin-top:14px">Os indicadores são exibidos após o acesso à conta.</p>
+                    <p class="path-card-copy" style="margin-top:14px">Os indicadores sÃ£o exibidos apÃ³s o acesso Ã  conta.</p>
                 <?php else: ?>
-                    <div class="player-overview" style="--progress:<?= $percentualAcertos ?? 0 ?>%"><div class="progress-ring"><div><strong><?= $percentualAcertos === null ? '&mdash;' : $percentualAcertos . '%' ?></strong><small>acertos</small></div></div><div class="overview-stats"><div class="progress-stat"><span>XP registrado</span><strong><?= $formatarDado($resumo['xp']) ?></strong></div><div class="progress-stat"><span>Etapas concluídas</span><strong><?= $formatarDado($etapasConcluidas) ?></strong></div><div class="progress-stat"><span>Simulados</span><strong><?= $formatarDado($resumo['simulados_realizados']) ?></strong></div></div></div>
+                    <div class="player-overview" style="--progress:<?= $percentualAcertos ?? 0 ?>%"><div class="progress-ring"><div><strong><?= $percentualAcertos === null ? '&mdash;' : $percentualAcertos . '%' ?></strong><small>acertos</small></div></div><div class="overview-stats"><div class="progress-stat"><span>XP registrado</span><strong><?= $formatarDado($resumo['xp']) ?></strong></div><div class="progress-stat"><span>Etapas concluÃ­das</span><strong><?= $formatarDado($etapasConcluidas) ?></strong></div><div class="progress-stat"><span>Simulados</span><strong><?= $formatarDado($resumo['simulados_realizados']) ?></strong></div></div></div>
                 <?php endif; ?>
             </section>
         </aside>
@@ -139,3 +145,4 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
     <script>document.querySelectorAll('.path-node[data-url]').forEach((button) => { button.addEventListener('click', () => window.location.assign(button.dataset.url)); });</script>
 </body>
 </html>
+

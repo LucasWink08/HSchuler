@@ -1,17 +1,1 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard do Aluno</title>
-    <link rel="stylesheet" href="<?= ASSET_URL ?>/css/estilo_homepage.css">
-</head>
-<body>
-    <h1>Dashboard do Aluno</h1>
-    <ul>
-        <li><a href="<?= APP_URL ?>/index.php?route=/aluno/trilha">Minha Trilha</a></li>
-        <li><a href="<?= APP_URL ?>/index.php?route=/aluno/simulados">Simulados</a></li>
-        <li><a href="<?= APP_URL ?>/index.php?route=/ranking">Ranking</a></li>
-    </ul>
-</body>
-</html>
+﻿<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Perfil do aluno</title><link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>"><style>body{margin:0;min-height:100vh;padding:32px;color:#fff;background:#030305;font-family:Arial,sans-serif}.page{width:min(880px,100%);margin:auto}.stats{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:14px;margin:22px 0}.card{padding:18px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:#0b0b10}.card small{color:#b9b9c2}.card strong{display:block;margin-top:8px;font-size:1.5rem}.links a{display:inline-block;margin:6px 8px 0 0;padding:10px 14px;border:1px solid #4d99dc;border-radius:8px;color:#fff;text-decoration:none}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}}</style></head><body><main class="page"><h1>Seu perfil</h1><section class="stats"><article class="card"><small>XP total</small><strong><?= (int)($resumo['xp'] ?? 0) ?></strong></article><article class="card"><small>Nível atual</small><strong><?= (int)($resumo['nivel'] ?? 1) ?></strong></article><article class="card"><small>Sequência diária</small><strong>🔥 <?= (int)($resumo['streak_atual'] ?? 0) ?></strong></article><article class="card"><small>Etapas concluídas</small><strong><?= (int)($resumo['etapas_concluidas'] ?? 0) ?>/<?= (int)($resumo['total_etapas'] ?? 0) ?></strong></article></section><nav class="links"><a href="<?= app_route('/aluno/trilha') ?>">Minha trilha</a><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a><a href="<?= app_route('/ranking') ?>">Ranking</a></nav></main></body></html>

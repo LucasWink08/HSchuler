@@ -1,7 +1,9 @@
 <?php
 
 define('APP_ROOT', dirname(__DIR__));
-define('APP_URL', '/Hschuler/Hschuler/public');
+$appUrl = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
+$appUrl = rtrim($appUrl, '/');
+define('APP_URL', $appUrl === '' ? '' : $appUrl);
 define('ASSET_URL', APP_URL . '/assets');
 
 function app_asset(string $path): string

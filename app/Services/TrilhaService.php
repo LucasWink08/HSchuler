@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 class TrilhaService
 {
-    public function getResumo(?int $alunoId): array
+    public function getResumo(?int $alunoId, ?string $area = null): array
     {
         $resumo = [
             'nome' => null,
@@ -38,8 +38,10 @@ class TrilhaService
                 'nome' => $aluno['usuario'],
                 'xp' => $xpTotal,
                 'nivel' => $this->calcularNivel($xpTotal),
-                'etapas_concluidas' => $this->contarEtapasConcluidas($db, $alunoId),
-                'total_etapas' => $this->contarEtapas($db),
+                'etapas_concluidas' => $area === null
+                    ? $this->contarEtapasConcluidas($db, $alunoId)
+                    : count(array_filter($this->getEstadosEtapas($alunoId, $area), static fn (string $estado): bool => $estado === 'complete')),
+                'total_etapas' => $area === null ? $this->contarEtapas($db) : count($this->getEtapas($area)),
                 'simulados_realizados' => $this->contarSimulados($db, $alunoId),
                 'percentual_acertos' => $respostas['total'] > 0
                     ? (int) round(($respostas['acertos'] / $respostas['total']) * 100)
@@ -90,7 +92,63 @@ class TrilhaService
         }
     }
 
-    public function getEstadosEtapas(int $alunoId): array
+    public function getProgressaoNivel(int $xp): array
+    {
+        $faixas = [
+            1 => ['inicio' => 0, 'fim' => 50],
+            2 => ['inicio' => 50, 'fim' => 120],
+            3 => ['inicio' => 120, 'fim' => 210],
+            4 => ['inicio' => 210, 'fim' => 320],
+            5 => ['inicio' => 320, 'fim' => 450],
+        ];
+        $xp = max(0, $xp);
+        $nivel = 5;
+        foreach ($faixas as $numero => $faixa) {
+            if ($xp < $faixa['fim'] || $numero === 5) {
+                $nivel = $numero;
+                break;
+            }
+        }
+        $faixa = $faixas[$nivel];
+        $percentual = $nivel === 5 && $xp >= $faixa['fim']
+            ? 100
+            : (int) round((min($xp, $faixa['fim']) - $faixa['inicio']) / ($faixa['fim'] - $faixa['inicio']) * 100);
+
+        return [
+            'nivel' => $nivel,
+            'inicio' => $faixa['inicio'],
+            'fim' => $faixa['fim'],
+            'percentual' => max(0, min(100, $percentual)),
+            'xp_restante' => max(0, $faixa['fim'] - $xp),
+        ];
+    }
+
+    public function getNomeEtapaDaArea(string $area, int $ordem): string
+    {
+        $etapas = $this->nomesEtapasDaArea($area);
+        return $etapas[$ordem - 1] ?? 'Etapa ' . $ordem;
+    }
+
+    public function getEtapas(string $area): array
+    {
+        try {
+            $db = Database::getConnection();
+            $modulo = $this->buscarOuCriarModulo($db, $area);
+            $stmt = $db->prepare(
+                'SELECT id, nome, descricao, ordem_num, estado
+                 FROM etapa_trilha
+                 WHERE modulo_id = :modulo_id
+                 ORDER BY ordem_num, id'
+            );
+            $stmt->execute([':modulo_id' => $modulo['id']]);
+
+            return $stmt->fetchAll() ?: [];
+        } catch (PDOException $exception) {
+            return [];
+        }
+    }
+
+    public function getEstadosEtapas(int $alunoId, string $area = 'potenciacao'): array
     {
         if ($alunoId <= 0) {
             return [];
@@ -98,8 +156,9 @@ class TrilhaService
 
         try {
             $db = Database::getConnection();
+            $modulo = $this->buscarOuCriarModulo($db, $area);
             $stmt = $db->prepare(
-                'SELECT etapa.id, etapa.nome, etapa.estado AS estado_padrao,
+                'SELECT etapa.id, etapa.nome, etapa.ordem_num, etapa.estado AS estado_padrao,
                     (
                         SELECT progresso.estado
                         FROM progresso_aluno AS progresso
@@ -108,19 +167,123 @@ class TrilhaService
                         ORDER BY progresso.ultima_atualizacao DESC, progresso.id DESC
                         LIMIT 1
                     ) AS estado_aluno
-                FROM etapa_trilha AS etapa'
+                 FROM etapa_trilha AS etapa
+                 WHERE etapa.modulo_id = :modulo_id
+                 ORDER BY etapa.ordem_num, etapa.id'
             );
-            $stmt->execute([':aluno_id' => $alunoId]);
+            $stmt->execute([':aluno_id' => $alunoId, ':modulo_id' => $modulo['id']]);
 
             $estados = [];
+            $anteriorConcluida = true;
             foreach ($stmt->fetchAll() as $etapa) {
-                $estado = $etapa['estado_aluno'] ?? $etapa['estado_padrao'];
-                $estados[$this->normalizarIdentificador((string) $etapa['nome'])] = $this->normalizarEstado((string) $estado);
+                $estadoSalvo = $etapa['estado_aluno'] !== null
+                    ? $this->normalizarEstado((string) $etapa['estado_aluno'])
+                    : null;
+                $estado = $estadoSalvo === 'complete'
+                    ? 'complete'
+                    : ($anteriorConcluida ? ((int) $etapa['ordem_num'] % 5 === 0 ? 'checkpoint' : 'current') : 'locked');
+                $estados[$this->normalizarIdentificador((string) $etapa['nome'])] = $estado;
+                $anteriorConcluida = $estado === 'complete';
             }
 
             return $estados;
         } catch (PDOException $exception) {
             return [];
+        }
+    }
+
+    public function concluirEtapa(int $alunoId, int $etapaId, array $respostas, array $questoes): ?array
+    {
+        if ($alunoId <= 0 || $etapaId <= 0 || count($questoes) !== 5 || count($respostas) !== 5) {
+            return null;
+        }
+
+        try {
+            $db = Database::getConnection();
+            $db->beginTransaction();
+            $stmtEtapa = $db->prepare(
+                'SELECT etapa.id, etapa.nome, etapa.ordem_num, etapa.modulo_id
+                 FROM etapa_trilha AS etapa
+                 WHERE etapa.id = :etapa_id LIMIT 1'
+            );
+            $stmtEtapa->execute([':etapa_id' => $etapaId]);
+            $etapa = $stmtEtapa->fetch();
+            if ($etapa === false || !$this->etapaLiberada($db, $alunoId, (int) $etapa['modulo_id'], (int) $etapa['ordem_num'])) {
+                $db->rollBack();
+                return null;
+            }
+
+            $acertos = 0;
+            foreach ($questoes as $indice => $questao) {
+                $resposta = isset($respostas[$indice]) ? (string) $respostas[$indice] : '';
+                if ($resposta !== '' && (int) $resposta === (int) $questao['correta']) {
+                    $acertos++;
+                }
+            }
+
+            $stmtTentativa = $db->prepare(
+                'INSERT INTO tentativa_etapa_trilha (aluno_id, etapa_id, acertos, erros, xp_recebido)
+                 VALUES (:aluno_id, :etapa_id, :acertos, :erros, :xp_recebido)'
+            );
+
+            $stmtProgresso = $db->prepare(
+                'SELECT id, estado FROM progresso_aluno
+                 WHERE aluno_id = :aluno_id AND etapa_id = :etapa_id
+                 ORDER BY id DESC LIMIT 1 FOR UPDATE'
+            );
+            $stmtProgresso->execute([':aluno_id' => $alunoId, ':etapa_id' => $etapaId]);
+            $progresso = $stmtProgresso->fetch();
+            $primeiraConclusao = $progresso === false || strtolower((string) $progresso['estado']) !== 'concluida';
+
+            if ($progresso === false) {
+                $stmt = $db->prepare(
+                    "INSERT INTO progresso_aluno (aluno_id, etapa_id, estado, percentual)
+                     VALUES (:aluno_id, :etapa_id, 'concluida', 100)"
+                );
+                $stmt->execute([':aluno_id' => $alunoId, ':etapa_id' => $etapaId]);
+            } else {
+                $stmt = $db->prepare(
+                    "UPDATE progresso_aluno SET estado = 'concluida', percentual = 100,
+                     ultima_atualizacao = CURRENT_TIMESTAMP WHERE id = :id"
+                );
+                $stmt->execute([':id' => $progresso['id']]);
+            }
+
+            $stmtTentativa->execute([
+                ':aluno_id' => $alunoId, ':etapa_id' => $etapaId,
+                ':acertos' => $acertos, ':erros' => 5 - $acertos,
+                ':xp_recebido' => $primeiraConclusao ? 10 : 0,
+            ]);
+
+            if ($primeiraConclusao) {
+                $stmt = $db->prepare(
+                    "INSERT INTO xp_transacao (aluno_id, tipo, quantidade, descricao)
+                     VALUES (:aluno_id, 'etapa_concluida', 10, :descricao)"
+                );
+                $stmt->execute([
+                    ':aluno_id' => $alunoId,
+                    ':descricao' => 'ConclusÃ£o da etapa ' . $etapaId,
+                ]);
+            }
+
+            $sequencia = $this->calcularSequencia($this->buscarDiasAtividade($db, $alunoId));
+            $this->sincronizarStreak($db, $alunoId, $sequencia);
+            $this->sincronizarPerfil($db, $alunoId);
+            $this->sincronizarRanking($db, $alunoId, $sequencia);
+            $db->commit();
+
+            return [
+                'acertos' => $acertos,
+                'erros' => 5 - $acertos,
+                'xp_recebido' => $primeiraConclusao ? 10 : 0,
+                'primeira_conclusao' => $primeiraConclusao,
+                'resumo' => $this->getResumo($alunoId),
+            ];
+        } catch (PDOException $exception) {
+            if (isset($db) && $db->inTransaction()) {
+                $db->rollBack();
+            }
+            return null;
         }
     }
 
@@ -202,7 +365,7 @@ class TrilhaService
                     ':aluno_id' => $alunoId,
                     ':tipo' => 'questao_concluida',
                     ':quantidade' => (int) $questao['pontuacao'],
-                    ':descricao' => 'Pontuação registrada para a questão ' . $questaoId,
+                    ':descricao' => 'PontuaÃ§Ã£o registrada para a questÃ£o ' . $questaoId,
                 ]);
             }
 
@@ -281,6 +444,16 @@ class TrilhaService
     public function normalizarIdentificador(string $texto): string
     {
         $texto = html_entity_decode($texto, ENT_QUOTES, 'UTF-8');
+        $texto = strtr($texto, [
+            'á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a',
+            'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+            'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ç' => 'c',
+            'Á' => 'A', 'À' => 'A', 'Â' => 'A', 'Ã' => 'A', 'É' => 'E',
+            'Ê' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O',
+            'Ú' => 'U', 'Ç' => 'C',
+        ]);
         $texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto) ?: $texto;
         $texto = strtolower(trim($texto));
         $texto = preg_replace('/[^a-z0-9]+/', '-', $texto) ?: '';
@@ -357,11 +530,19 @@ class TrilhaService
     private function buscarResumoRespostas(PDO $db, int $alunoId): array
     {
         $stmt = $db->prepare(
-            'SELECT COUNT(*) AS total, COALESCE(SUM(acertou = 1), 0) AS acertos
-             FROM resposta_aluno
-             WHERE aluno_id = :aluno_id'
+            'SELECT COALESCE(SUM(total), 0) AS total, COALESCE(SUM(acertos), 0) AS acertos
+             FROM (
+                SELECT COUNT(*) AS total, COALESCE(SUM(acertou = 1), 0) AS acertos
+                FROM resposta_aluno WHERE aluno_id = :aluno_id_respostas
+                UNION ALL
+                SELECT COUNT(*) * 5 AS total, COALESCE(SUM(acertos), 0) AS acertos
+                FROM tentativa_etapa_trilha WHERE aluno_id = :aluno_id_tentativas
+             ) AS resultados'
         );
-        $stmt->execute([':aluno_id' => $alunoId]);
+        $stmt->execute([
+            ':aluno_id_respostas' => $alunoId,
+            ':aluno_id_tentativas' => $alunoId,
+        ]);
         $resultado = $stmt->fetch() ?: [];
 
         return [
@@ -378,12 +559,15 @@ class TrilhaService
                 SELECT DATE(data_resposta) AS dia FROM resposta_aluno WHERE aluno_id = :aluno_id_resposta
                 UNION
                 SELECT DATE(created_at) AS dia FROM simulado WHERE aluno_id = :aluno_id_simulado
+                UNION
+                SELECT DATE(concluida_em) AS dia FROM tentativa_etapa_trilha WHERE aluno_id = :aluno_id_tentativa
              ) AS atividades
              ORDER BY dia ASC'
         );
         $stmt->execute([
             ':aluno_id_resposta' => $alunoId,
             ':aluno_id_simulado' => $alunoId,
+            ':aluno_id_tentativa' => $alunoId,
         ]);
 
         return array_values(array_filter(array_column($stmt->fetchAll(), 'dia')));
@@ -412,6 +596,9 @@ class TrilhaService
             $atual = $sequencia;
             $anterior = $data;
         }
+
+        $hoje = new DateTimeImmutable('today');
+        if ($anterior !== null && $anterior->format('Y-m-d') !== $hoje->format('Y-m-d') && $anterior->format('Y-m-d') !== $hoje->modify('-1 day')->format('Y-m-d')) { $atual = 0; }
 
         return ['atual' => $atual, 'maior' => $maior];
     }
@@ -611,7 +798,7 @@ class TrilhaService
 
     private function calcularNivel(int $xp): int
     {
-        return max(1, (int) floor($xp / 100) + 1);
+        return $this->getProgressaoNivel($xp)['nivel'];
     }
 
     private function normalizarEstado(string $estado): string
@@ -631,4 +818,47 @@ class TrilhaService
 
         return $mapa[$estado] ?? 'locked';
     }
+    private function buscarOuCriarModulo(PDO $db, string $area): array
+    {
+        $area = $this->normalizarIdentificador($area) ?: 'potenciacao';
+        $stmt = $db->query('SELECT id, nome FROM modulo ORDER BY id');
+        foreach ($stmt->fetchAll() as $modulo) {
+            if ($this->normalizarIdentificador((string) $modulo['nome']) === $area) return $modulo;
+        }
+        $titulos = ['potenciacao' => 'Potenciação', 'fracoes-algebricas' => 'Frações algébricas', 'produtos-notaveis' => 'Produtos notáveis', 'fatoracao' => 'Fatoração', 'equacoes' => 'Equações', 'inequacoes' => 'Inequações'];
+        $insert = $db->prepare('INSERT INTO modulo (nome, ordem_num) VALUES (:nome, 1)');
+        $insert->execute([':nome' => $titulos[$area] ?? ucfirst(str_replace('-', ' ', $area))]);
+        $id = (int) $db->lastInsertId();
+        $etapas = $this->nomesEtapasDaArea($area);
+        $stmtEtapa = $db->prepare('INSERT INTO etapa_trilha (modulo_id, nome, descricao, ordem_num, estado) VALUES (:modulo_id, :nome, :descricao, :ordem, :estado)');
+        foreach ($etapas as $indice => $nome) $stmtEtapa->execute([':modulo_id' => $id, ':nome' => $nome, ':descricao' => 'Etapa de aprendizagem: ' . $nome, ':ordem' => $indice + 1, ':estado' => ($indice + 1) % 5 === 0 ? 'checkpoint' : 'bloqueada']);
+        return ['id' => $id, 'nome' => $titulos[$area] ?? $area];
+    }
+
+    private function etapaLiberada(PDO $db, int $alunoId, int $moduloId, int $ordem): bool
+    {
+        if ($ordem <= 1) return true;
+        $stmt = $db->prepare('SELECT progresso.estado FROM progresso_aluno AS progresso INNER JOIN etapa_trilha AS etapa ON etapa.id = progresso.etapa_id WHERE progresso.aluno_id = :aluno_id AND etapa.modulo_id = :modulo_id AND etapa.ordem_num = :ordem ORDER BY progresso.ultima_atualizacao DESC, progresso.id DESC LIMIT 1');
+        $stmt->execute([':aluno_id' => $alunoId, ':modulo_id' => $moduloId, ':ordem' => $ordem - 1]);
+        $progresso = $stmt->fetch();
+        return $progresso !== false && strtolower((string) $progresso['estado']) === 'concluida';
+    }
+
+    private function nomesEtapasDaArea(string $area): array
+    {
+        $etapas = [
+            'potenciacao' => ['Introdução', 'Base e expoente', 'Potências de base 10', 'Exercícios de potenciação', 'Revisão', 'Produto de potências', 'Quociente de potências', 'Expoentes negativos', 'Desafio final'],
+            'fracoes-algebricas' => ['Termos algébricos', 'Domínio', 'Fator comum', 'Exercícios com frações', 'Revisão', 'Multiplicação', 'Soma e subtração', 'Frações complexas', 'Desafio final'],
+            'fatoracao' => ['Fator comum', 'Agrupamento', 'Diferença de quadrados', 'Exercícios de fatoração', 'Revisão', 'Trinômios', 'Soma de cubos', 'Prática', 'Desafio final'],
+            'equacoes' => ['Princípio da igualdade', 'Termos semelhantes', 'Isolando a incógnita', 'Exercícios de equações', 'Revisão', 'Parênteses', 'Problemas', '2º grau', 'Desafio final'],
+            'inequacoes' => ['Símbolos de comparação', 'Conjunto solução', 'Reta numérica', 'Exercícios de inequações', 'Revisão', 'Intervalos', 'Sistemas', 'Prática', 'Desafio final'],
+            'produtos-notaveis' => ['Padrões algébricos', 'Quadrado da soma', 'Quadrado da diferença', 'Exercícios de produtos notáveis', 'Revisão', 'Soma pela diferença', 'Aplicações', 'Fórmulas', 'Desafio final'],
+        ];
+
+        return $etapas[$area] ?? ['Introdução', 'Conceitos fundamentais', 'Prática guiada', 'Exercícios', 'Revisão', 'Aplicações', 'Aprofundamento', 'Prática final', 'Desafio final'];
+    }
 }
+
+
+
+

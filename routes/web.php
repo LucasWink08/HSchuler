@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 return [
     '/' => APP_ROOT . '/resources/views/layouts/home.php',
@@ -17,6 +17,7 @@ return [
     '/listar' => APP_ROOT . '/resources/views/aluno/listar.php',
     '/aluno/dashboard' => function () { (new AlunoController())->dashboard(); },
     '/aluno/trilha' => function () { (new AlunoController())->trilha(); },
+    '/aluno/etapa' => function () { (new AlunoController())->etapa(); },
     '/aluno/questoes' => function () { (new AlunoController())->questoes(); },
     '/aluno/simulados' => function () { (new AlunoController())->simulados(); },
     '/aluno/ranking' => function () { (new AlunoController())->ranking(); },
@@ -25,3 +26,4 @@ return [
     '/professor/atividades' => function () { (new ProfessorController())->atividades(); },
     '/professor/gerador-questoes' => function () { (new ProfessorController())->geradorQuestoes(); },
 ];
+
