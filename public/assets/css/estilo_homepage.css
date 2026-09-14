@@ -431,6 +431,7 @@ body.home-page {
   display: block;
   min-height: 100svh;
   overflow-x: hidden;
+  overflow-y: auto;
   color: #f5f8ff;
   background: #02050a url("../images/home/background.png") center top / cover fixed;
   font-family: Arial, Helvetica, sans-serif;
@@ -541,6 +542,19 @@ body.home-page::before {
 .home-nav-actions .account-link span {
   color: #6aa3ff;
   font-size: 1.15rem;
+}
+
+.home-nav-actions .welcome-account {
+  gap: 5px;
+  color: rgba(217, 227, 252, .76);
+  font-size: .78rem;
+  font-weight: 500;
+  line-height: 62px;
+}
+
+.home-nav-actions .welcome-account strong {
+  color: #6aa3ff;
+  font-weight: 700;
 }
 
 .home-nav-actions .nav-cta {
@@ -810,13 +824,13 @@ body.home-page::before {
 .learning-card {
   position: relative;
   display: flex;
-  min-height: 150px;
-  padding: 14px 15px;
+  min-height: 260px;
+  padding: 24px;
   flex-direction: column;
-  border: 1px solid rgba(78, 112, 177, .3);
-  border-radius: 9px;
-  background: linear-gradient(145deg, rgba(5, 11, 25, .84), rgba(1, 5, 14, .73));
-  box-shadow: inset 0 1px rgba(255, 255, 255, .025), 0 12px 25px rgba(0, 0, 0, .16);
+  border: 1px solid rgba(91, 158, 255, .55);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(12, 38, 88, .92), rgba(2, 13, 38, .9));
+  box-shadow: inset 0 1px rgba(161, 203, 255, .1), 0 14px 30px rgba(0, 31, 93, .3);
   color: #edf2ff;
   text-decoration: none;
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
@@ -824,32 +838,33 @@ body.home-page::before {
 
 .learning-card:hover,
 .learning-card:focus-visible {
-  border-color: #657fff;
-  background: linear-gradient(145deg, rgba(15, 29, 70, .88), rgba(4, 10, 28, .78));
-  box-shadow: 0 11px 28px rgba(19, 60, 155, .26), inset 0 1px rgba(255, 255, 255, .07);
+  border-color: #6aa3ff;
+  background: linear-gradient(145deg, rgba(20, 59, 125, .96), rgba(5, 22, 61, .94));
+  box-shadow: 0 16px 35px rgba(32, 105, 230, .32), inset 0 1px rgba(208, 230, 255, .14);
   outline: none;
   transform: translateY(-5px);
 }
 
 .card-formula {
   display: block;
-  min-height: 31px;
-  color: #7580ff;
+  min-height: 48px;
+  color: #6aa3ff;
   font-family: Georgia, serif;
-  font-size: 1.34rem;
+  font-size: 2.05rem;
   font-weight: 700;
   letter-spacing: -.055em;
   line-height: 1.05;
   text-shadow: 0 0 12px currentColor;
 }
 
-.card-formula sup { font-size: .58em; }.card-formula.orange { color: #d078ff; }.card-formula.pink { color: #df5eea; }.card-formula.purple { color: #a15dff; }
+.card-formula sup { font-size: .58em; }.card-formula.orange, .card-formula.pink, .card-formula.purple { color: #6aa3ff; }
 .card-formula small { display: block; margin-left: 9px; margin-top: -7px; font-size: .58em; }.card-formula > span { display: block; margin-left: 6px; }
-.learning-card > strong { margin-top: 8px; color: #f2f5ff; font-size: .76rem; font-weight: 600; }
-.card-level { display: flex; align-items: center; gap: 6px; margin-top: 7px; color: #8997b7; font-size: .61rem; }
-.card-level i { width: 6px; height: 6px; border-radius: 50%; background: #4c7aff; }.card-level i.orange { background: #ff894d; }.card-level i.pink { background: #d931cc; }.card-level i.purple { background: #9e52e7; }
-.card-progress { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 11px; padding-right: 16px; }.card-progress > span { flex: 1; }.card-progress small { color: #7989a8; font-size: .56rem; }
-.card-open { position: absolute; right: 13px; bottom: 12px; display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid #4162b5; border-radius: 50%; color: #d4e2ff; font-size: .88rem; transition: background .18s ease, border-color .18s ease; }.learning-card:hover .card-open { border-color: #849dff; background: #2d3d9c; }
+.learning-card > strong { margin-top: 12px; color: #f2f7ff; font-size: 1.08rem; font-weight: 600; }
+.card-level { display: flex; align-items: center; gap: 7px; margin-top: 9px; color: #b3c9ee; font-size: .82rem; }
+.card-level i, .card-level i.orange, .card-level i.pink, .card-level i.purple { width: 8px; height: 8px; border-radius: 50%; background: #5b9eff; box-shadow: 0 0 8px rgba(91, 158, 255, .75); }
+.card-footer { display: flex; align-items: center; gap: 16px; margin-top: auto; padding-top: 18px; }
+.card-progress { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; }.card-progress > span { flex: 1; height: 6px; }.card-progress small { flex: 0 0 auto; color: #b3c9ee; font-size: .72rem; }
+.card-open { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border: 1px solid #5b9eff; border-radius: 50%; color: #e3f0ff; font-size: 1.1rem; transition: background .18s ease, border-color .18s ease; }.learning-card:hover .card-open { border-color: #b5d5ff; background: #2458b5; }
 .learning-summary { margin: 15px 0 0; color: #8e9bb8; font-size: .7rem; text-align: center; }
 
 @media (max-width: 1100px) {
@@ -880,7 +895,7 @@ body.home-page::before {
   .home-page .home-main { width: min(100% - 24px, 480px); padding-bottom: 25px; }
   .home-hero { min-height: 450px; padding: 26px 4px 14px; }.hero-orbit { top: 27px; width: 105%; height: 300px; }.hero-logo { width: min(660px, 92vw); max-height: 220px; }.home-hero h1 { font-size: 2rem; }.home-hero > p { max-width: 365px; font-size: .81rem; }.hero-actions { gap: 9px; }.hero-button { padding: 9px 13px; font-size: .69rem; }
   .learning-header { align-items: flex-start; }.learning-header > a { padding-top: 3px; }.learning-header h2 { font-size: 1.03rem; }.learning-header p:not(.section-mark) { max-width: 230px; line-height: 1.35; }
-  .learning-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }.learning-card { min-height: 142px; padding: 13px; }
+  .learning-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }.learning-card { min-height: 200px; padding: 16px; }.card-formula { min-height: 37px; font-size: 1.55rem; }.learning-card > strong { margin-top: 9px; font-size: .88rem; }.card-level { margin-top: 7px; font-size: .68rem; }.card-footer { gap: 10px; padding-top: 12px; }.card-open { width: 28px; height: 28px; flex-basis: 28px; font-size: .95rem; }
 }
 
 @media (max-width: 370px) {
@@ -953,11 +968,11 @@ body.home-page::before {
   .stat-symbol { font-size: 1.3rem; }
 
   .learning-section { padding-top: 8px; }
-  .learning-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(14px, 1.15vw, 24px); }
-  .learning-card { min-height: 178px; padding: 18px; }
-  .card-formula { font-size: 1.55rem; }
-  .learning-card > strong { font-size: .86rem; }
-  .card-level { font-size: .67rem; }
+  .learning-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 1.6vw, 30px); }
+  .learning-card { min-height: 300px; padding: 28px; }
+  .card-formula { font-size: 2.25rem; }
+  .learning-card > strong { font-size: 1.14rem; }
+  .card-level { font-size: .86rem; }
 }
 
 .home-page .trilha-dropdown {

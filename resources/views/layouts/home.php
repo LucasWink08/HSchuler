@@ -36,7 +36,8 @@ $areas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=18">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=22">
+    <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body class="home-page">
     <nav class="home-nav" aria-label="Navegação principal">
@@ -59,8 +60,8 @@ $areas = [
         </div>
         <div class="home-nav-actions">
             <?php if ($estaLogado): ?>
-                <a class="account-link" href="<?= app_route('/aluno/dashboard') ?>" aria-label="Abrir painel do aluno"><span aria-hidden="true">&#9787;</span><?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?></a>
-                <a class="nav-cta" href="<?= app_route('/aluno/trilha') ?>">Continuar</a>
+                <span class="account-link welcome-account">Bem-vindo, <strong><?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                <a class="nav-cta" href="<?= app_route('/auth/logout') ?>">Sair</a>
             <?php else: ?>
                 <a class="account-link" href="<?= app_route('/login') ?>"><span aria-hidden="true">&#9787;</span>Login</a>
                 <a class="nav-cta" href="<?= app_route('/cadastro') ?>">Começar agora</a>
@@ -102,7 +103,6 @@ $areas = [
                     <h2 id="learning-title">Trilha de aprendizado</h2>
                     <p>Domine os principais conteúdos e avance no seu ritmo.</p>
                 </div>
-                <a href="<?= app_route('/aluno/trilha') ?>">Ver todos <span aria-hidden="true">&rarr;</span></a>
             </header>
             <div class="learning-cards">
                 <?php foreach ($areas as $area): ?>
@@ -111,8 +111,10 @@ $areas = [
                         <span class="card-formula <?= $area['cor'] ?>"><?= $area['icone'] ?></span>
                         <strong><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>
                         <span class="card-level"><i class="<?= $area['cor'] ?>"></i><?= $area['nivel'] ?></span>
-                        <div class="card-progress"><span><i style="--progress:<?= $progresso['percentual'] ?>%"></i></span><small><?= $progresso['percentual'] ?>%</small></div>
-                        <span class="card-open" aria-hidden="true">&rarr;</span>
+                        <div class="card-footer">
+                            <div class="card-progress"><span><i style="--progress:<?= $progresso['percentual'] ?>%"></i></span><small><?= $progresso['percentual'] ?>%</small></div>
+                            <span class="card-open" aria-hidden="true">&rarr;</span>
+                        </div>
                     </a>
                 <?php endforeach; ?>
             </div>
@@ -144,6 +146,17 @@ $areas = [
                 trigger?.focus();
             }
         });
+
+        if (window.ScrollReveal) {
+            ScrollReveal().reveal('.learning-card', {
+                origin: 'bottom',
+                distance: '50px',
+                duration: 1000,
+                interval: 200,
+                reset: false,
+                viewFactor: 0.2
+            });
+        }
     </script>
 </body>
 </html>

@@ -62,7 +62,7 @@
     </div>
 
     <div class="links">
-      <a href="<?= APP_URL ?>/index.php?route=/login">Já possui conta? Faça login</a>
+      <a href="<?= app_route('/login/professor') ?>">Já possui conta? Faça login</a>
     </div>
   </form>
 </div>

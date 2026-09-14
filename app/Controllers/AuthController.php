@@ -29,7 +29,39 @@ class AuthController
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
 
-        header('Location: ' . APP_URL . '/index.php?route=/aluno/dashboard');
+        header('Location: ' . app_route('/'));
+        exit;
+    }
+
+    public function professorLoginForm(): void
+    {
+        require APP_ROOT . '/resources/views/auth/login_professor.php';
+    }
+
+    public function professorLoginSubmit(): void
+    {
+        $siape = trim($_POST['siape'] ?? '');
+        $senha = $_POST['senha'] ?? '';
+
+        if ($siape === '' || $senha === '') {
+            header('Location: ' . app_route('/login/professor') . '&auth_error=SIAPE+ou+senha+inv%C3%A1lidos');
+            exit;
+        }
+
+        $service = new AuthService();
+        $professor = $service->loginProfessor($siape, $senha);
+
+        if ($professor === null) {
+            header('Location: ' . app_route('/login/professor') . '&auth_error=SIAPE+ou+senha+incorretos');
+            exit;
+        }
+
+        session_regenerate_id(true);
+        $_SESSION['usuario'] = $professor['nome'];
+        $_SESSION['user_id'] = $professor['id'];
+        $_SESSION['role'] = $professor['role'];
+
+        header('Location: ' . app_route('/professor/dashboard'));
         exit;
     }
 

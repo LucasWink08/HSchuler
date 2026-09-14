@@ -24,6 +24,21 @@ class AuthService
         ];
     }
 
+    public function loginProfessor(string $siape, string $senha): ?array
+    {
+        $professor = $this->repository->findProfessorBySiape($siape);
+
+        if (!$professor || !password_verify($senha, $professor['senha'] ?? '')) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $professor['id'],
+            'nome' => $professor['nome'],
+            'role' => 'professor',
+        ];
+    }
+
     public function registerAluno(string $usuario, string $email, string $dataNascimento, string $senha): bool
     {
         if ($this->repository->findByEmail($email)) {

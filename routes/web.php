@@ -4,6 +4,8 @@ return [
     '/' => APP_ROOT . '/resources/views/layouts/home.php',
     '/login' => function () { (new AuthController())->loginForm(); },
     '/auth/login-submit' => function () { (new AuthController())->loginSubmit(); },
+    '/login/professor' => function () { (new AuthController())->professorLoginForm(); },
+    '/auth/professor-login-submit' => function () { (new AuthController())->professorLoginSubmit(); },
     '/auth/logout' => function () { (new AuthController())->logout(); },
     '/cadastro/aluno' => APP_ROOT . '/resources/views/auth/cadastro_aluno.php',
     '/cadastro/professor' => APP_ROOT . '/resources/views/auth/cadastro_professor.php',

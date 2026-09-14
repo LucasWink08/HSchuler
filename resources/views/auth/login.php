@@ -53,7 +53,7 @@
             <input type="submit" value="Entrar">
           </div>
           <div class="links">
-            <a href="<?= app_route('/login') ?>">Esqueceu sua senha</a>
+            <a href="<?= app_route('/login/professor') ?>">Login de professor</a>
             <a href="<?= APP_URL ?>/index.php?route=/cadastro" class="signup-trigger">Faça seu cadastro</a>
           </div>
           <div class="signup-dropdown">
