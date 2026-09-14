@@ -7,6 +7,7 @@ class TrilhaService
         $resumo = [
             'nome' => null,
             'xp' => null,
+            'nivel' => null,
             'etapas_concluidas' => null,
             'total_etapas' => null,
             'simulados_realizados' => null,
@@ -31,10 +32,12 @@ class TrilhaService
             $diasAtividade = $this->buscarDiasAtividade($db, $alunoId);
             $sequencia = $this->calcularSequencia($diasAtividade);
             $respostas = $this->buscarResumoRespostas($db, $alunoId);
+            $xpTotal = $this->buscarXp($db, $alunoId);
 
             return [
                 'nome' => $aluno['usuario'],
-                'xp' => $this->buscarXp($db, $alunoId),
+                'xp' => $xpTotal,
+                'nivel' => $this->calcularNivel($xpTotal),
                 'etapas_concluidas' => $this->contarEtapasConcluidas($db, $alunoId),
                 'total_etapas' => $this->contarEtapas($db),
                 'simulados_realizados' => $this->contarSimulados($db, $alunoId),
@@ -216,6 +219,7 @@ class TrilhaService
             $sequencia = $this->calcularSequencia($diasAtividade);
             $this->sincronizarStreak($db, $alunoId, $sequencia);
             $this->sincronizarRanking($db, $alunoId, $sequencia);
+            $this->sincronizarPerfil($db, $alunoId);
 
             $db->commit();
 
@@ -261,6 +265,7 @@ class TrilhaService
             $sequencia = $this->calcularSequencia($this->buscarDiasAtividade($db, $alunoId));
             $this->sincronizarStreak($db, $alunoId, $sequencia);
             $this->sincronizarRanking($db, $alunoId, $sequencia);
+            $this->sincronizarPerfil($db, $alunoId);
             $db->commit();
 
             return true;
@@ -285,7 +290,7 @@ class TrilhaService
 
     private function buscarAluno(PDO $db, int $alunoId): ?array
     {
-        $stmt = $db->prepare('SELECT id, usuario FROM aluno WHERE id = :id LIMIT 1');
+        $stmt = $db->prepare('SELECT id, usuario, xp_total, nivel FROM aluno WHERE id = :id LIMIT 1');
         $stmt->execute([':id' => $alunoId]);
         $aluno = $stmt->fetch();
 
@@ -489,8 +494,12 @@ class TrilhaService
         $diasAtividade = $this->buscarDiasAtividade($db, $alunoId);
         $data = $diasAtividade === [] ? null : end($diasAtividade);
 
+        if ($data === null) {
+            return;
+        }
+
         $stmtStreak = $db->prepare(
-            'SELECT id FROM streak WHERE aluno_id = :aluno_id ORDER BY id DESC LIMIT 1'
+            'SELECT id, streak_atual, maior_streak, ultima_data_atividade FROM streak WHERE aluno_id = :aluno_id ORDER BY id DESC LIMIT 1'
         );
         $stmtStreak->execute([':aluno_id' => $alunoId]);
         $streak = $stmtStreak->fetch();
@@ -502,13 +511,31 @@ class TrilhaService
             );
             $insertStreak->execute([
                 ':aluno_id' => $alunoId,
-                ':streak_atual' => $sequencia['atual'],
-                ':maior_streak' => $sequencia['maior'],
+                ':streak_atual' => 1,
+                ':maior_streak' => 1,
                 ':ultima_data' => $data,
             ]);
 
             return;
         }
+
+        $ultimaData = $streak['ultima_data_atividade'] ?: null;
+        if ($ultimaData === $data) {
+            return;
+        }
+
+        $streakAtual = 1;
+        if ($ultimaData !== null) {
+            $ultima = new DateTimeImmutable((string) $ultimaData);
+            $nova = new DateTimeImmutable((string) $data);
+            $intervalo = (int) $ultima->diff($nova)->format('%a');
+
+            if ($intervalo === 1) {
+                $streakAtual = (int) $streak['streak_atual'] + 1;
+            }
+        }
+
+        $maiorStreak = max((int) $streak['maior_streak'], $streakAtual);
 
         $updateStreak = $db->prepare(
             'UPDATE streak
@@ -518,8 +545,8 @@ class TrilhaService
              WHERE id = :id'
         );
         $updateStreak->execute([
-            ':streak_atual' => $sequencia['atual'],
-            ':maior_streak' => $sequencia['maior'],
+            ':streak_atual' => $streakAtual,
+            ':maior_streak' => $maiorStreak,
             ':ultima_data' => $data,
             ':id' => $streak['id'],
         ]);
@@ -562,6 +589,29 @@ class TrilhaService
         );
         $dados[':id'] = $ranking['id'];
         $updateRanking->execute($dados);
+    }
+
+    private function sincronizarPerfil(PDO $db, int $alunoId): void
+    {
+        $xpTotal = $this->buscarXp($db, $alunoId);
+        $nivel = $this->calcularNivel($xpTotal);
+
+        $stmt = $db->prepare(
+            'UPDATE aluno
+             SET xp_total = :xp_total,
+                 nivel = :nivel
+             WHERE id = :aluno_id'
+        );
+        $stmt->execute([
+            ':xp_total' => $xpTotal,
+            ':nivel' => $nivel,
+            ':aluno_id' => $alunoId,
+        ]);
+    }
+
+    private function calcularNivel(int $xp): int
+    {
+        return max(1, (int) floor($xp / 100) + 1);
     }
 
     private function normalizarEstado(string $estado): string

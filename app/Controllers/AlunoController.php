@@ -13,17 +13,20 @@ class AlunoController
 
     public function dashboard(): void
     {
+        $this->requireAluno();
         require APP_ROOT . '/resources/views/aluno/dashboard.php';
     }
 
     public function trilha(): void
     {
+        $this->requireAluno();
         $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
         require APP_ROOT . '/resources/views/aluno/trilha.php';
     }
 
     public function simulados(): void
     {
+        $this->requireAluno();
         $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
         $questoesDisponiveis = $this->questaoService->getQuestoesSimulado();
 
@@ -73,33 +76,43 @@ class AlunoController
 
     public function questoes(): void
     {
+        $this->requireAluno();
         $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
-        $questoes = $this->questaoService->getQuestoes($area);
+        $recorte = trim((string) ($_GET['etapa'] ?? ''));
+        $recorte = preg_replace('/[^\p{L}\p{N}\s-]/u', '', $recorte) ?? '';
+        $recorte = function_exists('mb_substr') ? mb_substr($recorte, 0, 80, 'UTF-8') : substr($recorte, 0, 80);
+        $questoes = array_slice($this->questaoService->getQuestoes($area, $recorte), 0, 5);
         $resultado = null;
-        $respostaEnviada = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $indice = filter_input(INPUT_POST, 'questao', FILTER_VALIDATE_INT);
-            $respostaEnviada = filter_input(INPUT_POST, 'resposta', FILTER_VALIDATE_INT);
+            $respostas = $_POST['respostas'] ?? [];
+            $acertos = 0;
+            $alunoId = $this->getAlunoId();
 
-            if ($indice !== false && $indice !== null && isset($questoes[$indice])) {
-                $questao = $questoes[$indice];
-                $correta = $this->questaoService->corrigir($questao, $respostaEnviada);
-                $alunoId = $this->getAlunoId();
+            foreach ($questoes as $indice => $questao) {
+                $resposta = isset($respostas[$indice]) ? (string) $respostas[$indice] : null;
+                $correta = $this->questaoService->corrigir($questao, $resposta);
 
-                if ($alunoId !== null && isset($questao['id'])) {
-                    $registro = $this->trilhaService->registrarResposta($alunoId, (int) $questao['id'], (string) $respostaEnviada);
+                if ($alunoId !== null && isset($questao['id']) && $resposta !== null) {
+                    $registro = $this->trilhaService->registrarResposta($alunoId, (int) $questao['id'], $resposta);
                     if ($registro !== null) {
                         $correta = $registro['correta'];
                     }
                 }
 
-                $resultado = [
-                    'correta' => $correta,
-                    'resposta_correta' => $questao['correta'],
-                    'explicacao' => $questao['explicacao'],
-                ];
+                if ($correta) {
+                    $acertos++;
+                }
             }
+
+            $resultado = [
+                'acertos' => $acertos,
+                'total' => count($questoes),
+                'percentual' => count($questoes) > 0 ? (int) round(($acertos / count($questoes)) * 100) : 0,
+            ];
+
+            header('Location: ' . app_route('/aluno/trilha') . '&area=' . urlencode($area));
+            exit;
         }
 
         require APP_ROOT . '/resources/views/aluno/questoes.php';
@@ -107,11 +120,26 @@ class AlunoController
 
     public function ranking(): void
     {
+        $this->requireAluno();
         require APP_ROOT . '/resources/views/aluno/ranking.php';
+    }
+
+    private function requireAluno(): void
+    {
+        if ($this->getAlunoId() !== null) {
+            return;
+        }
+
+        header('Location: ' . app_route('/') . '&access=login-required');
+        exit;
     }
 
     private function getAlunoId(): ?int
     {
+        if (($_SESSION['role'] ?? null) !== 'aluno') {
+            return null;
+        }
+
         $alunoId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
 
         return $alunoId !== false && $alunoId !== null && $alunoId > 0 ? $alunoId : null;

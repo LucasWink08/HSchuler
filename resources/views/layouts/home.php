@@ -28,6 +28,7 @@ if ($alunoLogado) {
 }
 
 $xp = $resumo['xp'];
+$nivel = $resumo['nivel'] ?? 1;
 $streak = $resumo['streak_atual'];
 $etapasConcluidas = $resumo['etapas_concluidas'];
 $totalEtapas = $resumo['total_etapas'];
@@ -131,7 +132,7 @@ $areas = [
                 <div class="level-badge" aria-hidden="true">◆</div>
                 <div>
                     <span>Nível</span>
-                    <strong><?= $estaLogado ? 'Em evolução' : 'Comece sua jornada' ?></strong>
+                    <strong><?= $estaLogado ? 'Nível ' . (int) $nivel : 'Comece sua jornada' ?></strong>
                 </div>
             </div>
             <div class="xp-row"><span><?= $estaLogado ? 'XP registrado: ' . ($xp ?? 0) : 'Entre para registrar XP' ?></span></div>

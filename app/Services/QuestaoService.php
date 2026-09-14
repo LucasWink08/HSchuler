@@ -83,15 +83,83 @@ class QuestaoService
         ];
     }
 
-    public function getQuestoes(string $area): array
+    public function getQuestoes(string $area, ?string $etapa = null): array
     {
-        $questoesDoBanco = $this->buscarQuestoesDoBanco($area);
+        $questoesDoBanco = $this->buscarQuestoesDoBanco($area, $etapa);
+        $questoes = $questoesDoBanco !== []
+            ? $questoesDoBanco
+            : ($this->questoes[$area] ?? $this->questoes['potenciacao']);
 
-        if ($questoesDoBanco !== []) {
-            return $questoesDoBanco;
+        if (count($questoes) < 5) {
+            $questoes = array_merge($questoes, $this->getQuestoesComplementares($area));
         }
 
-        return $this->questoes[$area] ?? $this->questoes['potenciacao'];
+        $visiveis = [];
+        $usadas = [];
+        foreach ($questoes as $questao) {
+            $chave = $questao['id'] ?? hash('sha256', json_encode($questao['enunciado'] ?? '') . '|' . json_encode($questao['alternativas'] ?? []));
+            if (isset($usadas[$chave])) {
+                continue;
+            }
+
+            $usadas[$chave] = true;
+            $visiveis[] = $questao;
+            if (count($visiveis) >= 5) {
+                break;
+            }
+        }
+
+        while (count($visiveis) < 5 && $questoes !== []) {
+            $qualquer = $questoes[count($visiveis) % count($questoes)];
+            $chave = $qualquer['id'] ?? hash('sha256', json_encode($qualquer['enunciado'] ?? '') . '|' . json_encode($qualquer['alternativas'] ?? []));
+            if (!isset($usadas[$chave])) {
+                $usadas[$chave] = true;
+                $visiveis[] = $qualquer;
+            }
+        }
+
+        return array_slice($visiveis, 0, 5);
+    }
+
+    private function getQuestoesComplementares(string $area): array
+    {
+        $questoes = [
+            'potenciacao' => [
+                ['enunciado' => 'Qual Ã© o resultado de 5^0?', 'alternativas' => ['0', '1', '5', 'NÃ£o existe'], 'correta' => 1, 'explicacao' => 'Toda potÃªncia de base diferente de zero elevada a 0 Ã© igual a 1.'],
+                ['enunciado' => 'Qual Ã© o resultado de 10^2?', 'alternativas' => ['20', '100', '1.000', '12'], 'correta' => 1, 'explicacao' => '10^2 Ã© 10 multiplicado por 10, portanto Ã© igual a 100.'],
+                ['enunciado' => 'Qual expressÃ£o Ã© equivalente a 3^4?', 'alternativas' => ['3 + 4', '3 x 4', '3 x 3 x 3 x 3', '4 x 4 x 4'], 'correta' => 2, 'explicacao' => 'O expoente indica quantas vezes a base Ã© multiplicada por ela mesma.'],
+            ],
+            'fracoes-algebricas' => [
+                ['enunciado' => 'Qual Ã© a forma simplificada de 8x / 4?', 'alternativas' => ['2x', '4x', '8x', 'x/2'], 'correta' => 0, 'explicacao' => 'Dividindo 8 por 4, obtemos 2x.'],
+                ['enunciado' => 'Qual valor de x deve ser excluÃ­do de 1/x?', 'alternativas' => ['0', '1', '-1', 'Nenhum'], 'correta' => 0, 'explicacao' => 'O denominador nÃ£o pode ser igual a zero.'],
+                ['enunciado' => 'Qual Ã© o resultado de (2x)/x, com x diferente de zero?', 'alternativas' => ['0', '1', '2', '2x'], 'correta' => 2, 'explicacao' => 'O fator x Ã© simplificado, restando 2.'],
+            ],
+            'produtos-notaveis' => [
+                ['enunciado' => 'Qual Ã© o desenvolvimento de (x - 2)^2?', 'alternativas' => ['x^2 - 4x + 4', 'x^2 - 4', 'x^2 + 4x + 4', 'x^2 - 2x + 4'], 'correta' => 0, 'explicacao' => 'Aplicamos (a-b)^2 = a^2 - 2ab + b^2.'],
+                ['enunciado' => 'Qual Ã© o resultado de (a + b)(a - b)?', 'alternativas' => ['a^2 + b^2', 'a^2 - b^2', 'a^2 - 2ab + b^2', 'a + b'], 'correta' => 1, 'explicacao' => 'Ã‰ o produto da soma pela diferenÃ§a.'],
+                ['enunciado' => 'Qual termo aparece duas vezes em (x + y)^2?', 'alternativas' => ['x^2', 'y^2', '2xy', 'x + y'], 'correta' => 2, 'explicacao' => 'O termo do meio Ã© 2xy.'],
+            ],
+            'fatoracao' => [
+                ['enunciado' => 'Qual Ã© a fatoraÃ§Ã£o de x^2 - 16?', 'alternativas' => ['(x - 4)(x + 4)', '(x - 16)(x + 1)', 'x(x - 16)', '(x - 4)^2'], 'correta' => 0, 'explicacao' => 'Ã‰ uma diferenÃ§a de quadrados: x^2 - 4^2.'],
+                ['enunciado' => 'Qual Ã© o fator comum de 4x + 8?', 'alternativas' => ['2', '4', '8', 'x'], 'correta' => 1, 'explicacao' => '4 Ã© divisor comum de 4x e 8.'],
+                ['enunciado' => 'Qual Ã© a fatoraÃ§Ã£o de x^2 + 5x?', 'alternativas' => ['x(x + 5)', '(x + 5)^2', 'x(x + 1)', '(x - 5)(x + 5)'], 'correta' => 0, 'explicacao' => 'Colocamos x em evidÃªncia.'],
+                ['enunciado' => 'Qual expressÃ£o resulta de 2(x + 3)?', 'alternativas' => ['2x + 3', '2x + 5', '2x + 6', 'x + 6'], 'correta' => 2, 'explicacao' => 'A distributiva multiplica os dois termos por 2.'],
+            ],
+            'equacoes' => [
+                ['enunciado' => 'Qual Ã© a soluÃ§Ã£o de x - 7 = 5?', 'alternativas' => ['2', '12', '-12', '35'], 'correta' => 1, 'explicacao' => 'Somamos 7 aos dois lados da equaÃ§Ã£o.'],
+                ['enunciado' => 'Qual Ã© a soluÃ§Ã£o de 3x = 18?', 'alternativas' => ['3', '6', '9', '21'], 'correta' => 1, 'explicacao' => 'Dividimos os dois lados por 3.'],
+                ['enunciado' => 'Qual Ã© o valor de x em 5x - 5 = 20?', 'alternativas' => ['3', '4', '5', '6'], 'correta' => 2, 'explicacao' => 'Somando 5, temos 5x = 25; depois dividimos por 5.'],
+                ['enunciado' => 'Qual Ã© a soluÃ§Ã£o de x/2 = 4?', 'alternativas' => ['2', '4', '6', '8'], 'correta' => 3, 'explicacao' => 'Multiplicamos ambos os lados por 2.'],
+            ],
+            'inequacoes' => [
+                ['enunciado' => 'Qual Ã© a soluÃ§Ã£o de 2x > 8?', 'alternativas' => ['x > 4', 'x < 4', 'x > 6', 'x < 6'], 'correta' => 0, 'explicacao' => 'Dividimos ambos os lados positivos por 2.'],
+                ['enunciado' => 'Qual nÃºmero satisfaz x < 3?', 'alternativas' => ['5', '3', '2', '4'], 'correta' => 2, 'explicacao' => '2 Ã© menor que 3.'],
+                ['enunciado' => 'Qual Ã© a soluÃ§Ã£o de x - 1 >= 4?', 'alternativas' => ['x >= 3', 'x >= 5', 'x <= 5', 'x > 4'], 'correta' => 1, 'explicacao' => 'Somamos 1 aos dois lados.'],
+                ['enunciado' => 'Qual sÃ­mbolo representa "menor ou igual"?', 'alternativas' => ['>', '<', '>=', '<='], 'correta' => 3, 'explicacao' => 'O sÃ­mbolo <= significa menor ou igual.'],
+            ],
+        ];
+
+        return $questoes[$area] ?? $questoes['potenciacao'];
     }
 
     public function getQuestoesSimulado(): array
@@ -190,7 +258,7 @@ class QuestaoService
         return $resposta !== null && (int) $resposta === (int) $questao['correta'];
     }
 
-    private function buscarQuestoesDoBanco(?string $area = null): array
+    private function buscarQuestoesDoBanco(?string $area = null, ?string $etapa = null): array
     {
         try {
             $db = Database::getConnection();
@@ -198,15 +266,22 @@ class QuestaoService
                 'SELECT questao.id, questao.enunciado, questao.alternativa_a, questao.alternativa_b,
                         questao.alternativa_c, questao.alternativa_d, questao.resposta_correta,
                         questao.explicacao, questao.pontuacao, questao.atividade_id,
-                        assunto.nome AS assunto
+                        assunto.nome AS assunto,
+                        etapa_trilha.nome AS etapa
                  FROM questao
                  LEFT JOIN assunto ON assunto.id = questao.assunto_id
+                 LEFT JOIN atividade ON atividade.id = questao.atividade_id
+                 LEFT JOIN etapa_trilha ON etapa_trilha.id = atividade.etapa_id
                  ORDER BY questao.id'
             );
             $questoes = [];
 
             foreach ($stmt->fetchAll() as $questao) {
                 if ($area !== null && $this->normalizarArea((string) $questao['assunto']) !== $area) {
+                    continue;
+                }
+
+                if ($etapa !== null && trim($etapa) !== '' && $this->normalizarArea((string) $questao['etapa']) !== $this->normalizarArea((string) $etapa)) {
                     continue;
                 }
 
