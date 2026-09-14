@@ -4,10 +4,10 @@ $alunoId = $alunoId !== false && $alunoId !== null && $alunoId > 0 ? (int) $alun
 $usuario = trim((string) ($_SESSION['usuario'] ?? ''));
 $estaLogado = $alunoId !== null && $usuario !== '';
 $resumo = [
-    'xp' => 0,
-    'streak_atual' => 0,
-    'etapas_concluidas' => 0,
-    'total_etapas' => 0,
+    'xp' => null,
+    'streak_atual' => null,
+    'etapas_concluidas' => null,
+    'total_etapas' => null,
 ];
 $progressoAreas = [];
 
@@ -17,13 +17,10 @@ if ($estaLogado) {
     $progressoAreas = $trilhaService->getProgressoPorArea($alunoId);
 }
 
-$xp = max(0, (int) ($resumo['xp'] ?? 0));
-$nivel = intdiv($xp, 100) + 1;
-$xpNoNivel = $xp % 100;
-$progressoNivel = $xpNoNivel;
-$streak = max(0, (int) ($resumo['streak_atual'] ?? 0));
-$etapasConcluidas = max(0, (int) ($resumo['etapas_concluidas'] ?? 0));
-$totalEtapas = max(0, (int) ($resumo['total_etapas'] ?? 0));
+$xp = $resumo['xp'];
+$streak = $resumo['streak_atual'];
+$etapasConcluidas = $resumo['etapas_concluidas'];
+$totalEtapas = $resumo['total_etapas'];
 $areas = [
     ['id' => 'potenciacao', 'titulo' => 'Potenciação', 'icone' => 'a<sup>2</sup>', 'nivel' => 'Iniciante', 'cor' => 'blue'],
     ['id' => 'fracoes-algebricas', 'titulo' => 'Frações algébricas', 'icone' => '<span>x</span><small>y</small>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
@@ -39,7 +36,7 @@ $areas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=16">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=18">
 </head>
 <body class="home-page">
     <nav class="home-nav" aria-label="Navegação principal">
@@ -47,7 +44,14 @@ $areas = [
             <img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
         </a>
         <div class="home-nav-links">
-            <a class="is-active" href="#trilha">Trilha de aprendizado</a>
+            <div class="trilha-dropdown">
+                <button class="trilha-trigger is-active" type="button" aria-expanded="false" aria-controls="trilha-menu">Trilha de aprendizado <span aria-hidden="true">⌄</span></button>
+                <div class="trilha-menu" id="trilha-menu">
+                    <?php foreach ($areas as $area): ?>
+                        <a href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>"><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
             <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>
             <a href="<?= app_route('/aluno/simulados') ?>">Simulados</a>
             <a href="<?= app_route('/ranking') ?>">Ranking</a>
@@ -78,15 +82,15 @@ $areas = [
 
         <aside class="home-profile-card" aria-label="Resumo do seu progresso">
             <div class="profile-level">
-                <div class="level-badge" aria-hidden="true"><?= $nivel ?></div>
+                <div class="level-badge" aria-hidden="true">◆</div>
                 <div>
                     <span>Nível</span>
-                    <strong><?= $estaLogado ? 'Nível ' . $nivel : 'Comece sua jornada' ?></strong>
+                    <strong><?= $estaLogado ? 'Em evolução' : 'Comece sua jornada' ?></strong>
                 </div>
             </div>
-            <div class="xp-row"><span><?= $estaLogado ? $xpNoNivel . ' / 100 XP' : 'Entre para registrar XP' ?></span><div class="xp-track"><i style="--xp:<?= $estaLogado ? $progressoNivel : 0 ?>%"></i></div></div>
+            <div class="xp-row"><span><?= $estaLogado ? 'XP registrado: ' . ($xp ?? 0) : 'Entre para registrar XP' ?></span></div>
             <div class="profile-stats">
-                <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $estaLogado ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
+                <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $estaLogado && $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
                 <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>
             </div>
         </aside>
@@ -112,10 +116,34 @@ $areas = [
                     </a>
                 <?php endforeach; ?>
             </div>
-            <?php if ($estaLogado && $totalEtapas > 0): ?>
+            <?php if ($estaLogado && $totalEtapas !== null && $totalEtapas > 0): ?>
                 <p class="learning-summary"><?= $etapasConcluidas ?> de <?= $totalEtapas ?> etapas concluídas na sua jornada.</p>
             <?php endif; ?>
         </section>
     </main>
+    <script>
+        const dropdown = document.querySelector('.trilha-dropdown');
+        const trigger = dropdown?.querySelector('.trilha-trigger');
+
+        trigger?.addEventListener('click', () => {
+            const aberto = dropdown.classList.toggle('is-open');
+            trigger.setAttribute('aria-expanded', String(aberto));
+        });
+
+        document.addEventListener('click', (event) => {
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('is-open');
+                trigger?.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                dropdown?.classList.remove('is-open');
+                trigger?.setAttribute('aria-expanded', 'false');
+                trigger?.focus();
+            }
+        });
+    </script>
 </body>
 </html>
