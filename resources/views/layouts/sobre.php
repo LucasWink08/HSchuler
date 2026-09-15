@@ -20,10 +20,7 @@ $imagemPaginaDois = $siteRoot . '/imgs/pag2.png';
     </style>
 </head>
 <body class="about-page">
-    <nav class="about-nav" aria-label="Navegação da página Sobre">
-        <a class="about-brand" href="<?= app_route('/') ?>"><img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler"><span>HSchuler</span></a>
-        <a class="about-nav-link" href="<?= app_route('/') ?>">← Voltar à página inicial</a>
-    </nav>
+    <?php $navbarActive = 'sobre'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
     <main class="about-main">
         <header class="about-hero">
             <p class="about-mark">Conheça a plataforma</p>

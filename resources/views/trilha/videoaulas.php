@@ -350,19 +350,7 @@
   </style>
 </head>
 <body class="video-page">
-  <nav class="home-nav" aria-label="Navegação principal">
-    <a class="home-return" href="<?= app_route('/') ?>">Home</a>
-    <div class="home-nav-links">
-      <a href="<?= app_route('/') ?>">Trilha de aprendizado</a>
-      <a href="<?= app_route('/videoaulas') ?>" class="is-active">Videoaulas</a>
-      <a href="<?= app_route('/aluno/simulados') ?>">Simulados</a>
-      <a href="<?= app_route('/ranking') ?>">Ranking</a>
-      <a href="<?= app_route('/') ?>#sobre">Sobre</a>
-    </div>
-    <div class="home-nav-actions">
-      <a href="<?= app_route('/login') ?>">Login</a>
-    </div>
-  </nav>
+  <?php $navbarActive = 'videoaulas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 
   <div class="video-wrap">
     <div class="video-title">

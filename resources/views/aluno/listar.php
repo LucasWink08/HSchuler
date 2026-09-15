@@ -8,24 +8,23 @@
 </head>
 <body>
 <?php
+$filtro = trim((string) ($_GET['filtro'] ?? ''));
+$conexao = Database::getConnection();
+$sql = 'SELECT id, usuario, email, data_nasc FROM aluno';
+$parametros = [];
 
-require __DIR__ . '/includes/conexao_inc.php';
-$conexao = new PDO(dsn,usuario,senha);
-$sql = "SELECT id, usuario, email, data_nasc FROM usuario ORDER BY id DESC";
-$comando = $conexao->prepare($sql);
-$comando->execute();
-$usuarios = $comando->fetchAll(PDO::FETCH_ASSOC);
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['filtro']) && !empty($_GET['filtro'])) {
-    $filtro = '%' . $_GET['filtro'] . '%';
-    $sql = "SELECT id, usuario, email, data_nasc FROM usuarios WHERE usuario LIKE :filtro OR email LIKE :filtro";
-    $comando = $conexao->prepare($sql);
-    $comando->bindParam(':filtro', $filtro);
-    $comando->execute();
-    $usuarios = $comando->fetchAll(PDO::FETCH_ASSOC);
+if ($filtro !== '') {
+    $sql .= ' WHERE usuario LIKE :filtro OR email LIKE :filtro';
+    $parametros['filtro'] = '%' . $filtro . '%';
 }
+
+$sql .= ' ORDER BY id DESC';
+$comando = $conexao->prepare($sql);
+$comando->execute($parametros);
+$usuarios = $comando->fetchAll();
 ?>
-<nav>
+<?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+<nav hidden>
   <ul>
     <li><a href="<?= app_route('/') ?>">Home</a></li>
     <li><a href="<?= app_route('/listar') ?>">Listar</a></li>
@@ -34,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['filtro']) && !empty($_G
 <div class="container">
   <h1>Usuários Cadastrados</h1>
   
-  <form class="search-form" action="" method="get">
-    <input type="text" name="filtro" id="filtro" placeholder="Filtrar por nome ou email..." value="<?php echo htmlspecialchars($_GET['filtro'] ?? ''); ?>">
+  <form class="search-form" action="<?= app_route('/listar') ?>" method="get">
+    <input type="text" name="filtro" id="filtro" placeholder="Filtrar por nome ou email..." value="<?= htmlspecialchars($filtro, ENT_QUOTES, 'UTF-8') ?>">
     <button type="submit">Filtrar</button>
   </form>
 

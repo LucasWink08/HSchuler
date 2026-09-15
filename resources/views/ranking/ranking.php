@@ -310,19 +310,7 @@
   </style>
 </head>
 <body class="ranking-page">
-  <nav class="home-nav" aria-label="Navegação principal">
-    <a class="home-return" href="<?= app_route('/') ?>">Home</a>
-    <div class="home-nav-links">
-      <a href="<?= app_route('/') ?>">Trilha de aprendizado</a>
-      <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>
-      <a href="<?= app_route('/aluno/simulados') ?>">Simulados</a>
-      <a href="<?= app_route('/ranking') ?>" class="is-active">Ranking</a>
-      <a href="<?= app_route('/sobre') ?>">Sobre</a>
-    </div>
-    <div class="home-nav-actions">
-      <a href="<?= app_route('/login') ?>">Login</a>
-    </div>
-  </nav>
+  <?php $navbarActive = 'ranking'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 
   <div class="ranking-wrap">
     <div class="ranking-title">

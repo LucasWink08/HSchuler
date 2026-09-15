@@ -92,7 +92,8 @@ $formatarExpressao = static function (string $texto): string {
     </style>
 </head>
 <body class="exam-page">
-<nav class="exam-nav" aria-label="Navegação do simulado">
+<?php $navbarActive = 'simulados'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+<nav class="exam-nav" aria-label="Navegação do simulado" hidden>
     <a class="exam-nav-back" href="<?= app_route('/') ?>">&larr; Voltar para a home</a>
     <div class="exam-nav-links">
         <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>

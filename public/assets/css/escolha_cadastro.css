@@ -1,0 +1,279 @@
+.cadastro-choice-page nav {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  min-height: 62px;
+  padding: 0 28px 0 14px;
+  grid-template-columns: 120px minmax(0, 1fr) 160px;
+  align-items: center;
+}
+
+.cadastro-choice-page nav .left,
+.cadastro-choice-page nav .center,
+.cadastro-choice-page nav .right,
+.cadastro-choice-page nav ul {
+  display: flex;
+  align-items: center;
+}
+
+.cadastro-choice-page nav .left { justify-content: flex-start; }
+.cadastro-choice-page nav .center { justify-content: center; min-width: 0; }
+.cadastro-choice-page nav .right { justify-content: flex-end; }
+
+.cadastro-choice-page nav ul {
+  gap: clamp(18px, 2.2vw, 40px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cadastro-choice-page nav li { margin: 0; }
+
+.cadastro-choice-page nav a {
+  color: rgba(217, 227, 252, .76);
+  font-size: .78rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .18s ease, filter .18s ease, transform .18s ease;
+}
+
+.cadastro-choice-page nav .left a {
+  display: block;
+  width: 88px;
+  height: 34px;
+}
+
+.cadastro-choice-page nav .left img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cadastro-choice-page nav .center a:hover,
+.cadastro-choice-page nav .center a:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+.cadastro-choice-page nav .right a {
+  min-width: 90px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #536dff;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #3530b6, #17267e);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .25), 0 0 18px rgba(67, 83, 255, .25);
+  color: #fff;
+  line-height: 34px;
+  text-align: center;
+}
+
+.cadastro-choice-page nav .right a:hover,
+.cadastro-choice-page nav .right a:focus-visible {
+  filter: brightness(1.16);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cadastro-choice-page .escolha-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(840px, calc(100% - 48px));
+  min-height: calc(100svh - 62px);
+  margin: 0 auto;
+  padding: 54px 0 64px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+.cadastro-choice-page .escolha-container h2 {
+  max-width: 570px;
+  margin: 0 auto;
+  color: #f3f7ff;
+  font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow: none;
+}
+
+.cadastro-choice-page .escolha-container h2::before {
+  display: block;
+  margin-bottom: 12px;
+  color: #769dff;
+  content: "// CRIE SUA CONTA";
+  font-size: .69rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.cadastro-choice-page .cards {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cadastro-choice-page .card {
+  display: flex;
+  min-height: 310px;
+  padding: 26px;
+  flex-direction: column;
+  border: 1px solid rgba(91, 138, 230, .36);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(13, 38, 87, .94), rgba(3, 13, 38, .96));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .3), inset 0 1px rgba(213, 232, 255, .08);
+  text-align: left;
+}
+
+.cadastro-choice-page .card:hover {
+  border-color: #6aa3ff;
+  background: linear-gradient(145deg, rgba(20, 59, 125, .96), rgba(5, 22, 61, .94));
+  box-shadow: 0 18px 38px rgba(32, 105, 230, .3), inset 0 1px rgba(208, 230, 255, .14);
+  transform: translateY(-5px);
+}
+
+.cadastro-choice-page .card .titulo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 13px;
+  margin: 0;
+  color: #f0f5ff;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.cadastro-choice-page .card .titulo::before {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(115, 163, 255, .65);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1c55b2, #4d72f0);
+  box-shadow: 0 0 18px rgba(70, 133, 255, .27), inset 0 1px rgba(255, 255, 255, .3);
+  content: "01";
+  color: #e9f4ff;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.cadastro-choice-page .card:nth-child(2) .titulo::before {
+  background: linear-gradient(135deg, #4935b5, #8760f3);
+  content: "02";
+}
+
+.cadastro-choice-page .card ul {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 24px;
+  padding: 0;
+  list-style: none;
+  font-size: .8rem;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.cadastro-choice-page .card ul li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  color: #d4e0f7;
+}
+
+.cadastro-choice-page .card ul li::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  content: "";
+  background: #72aaff;
+  box-shadow: 0 0 8px rgba(114, 170, 255, .8);
+}
+
+.cadastro-choice-page .card .btn {
+  display: inline-flex;
+  min-height: 42px;
+  margin-top: auto;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid #526fff;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #3530b6, #2458b5);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .25), 0 8px 18px rgba(51, 78, 227, .22);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.cadastro-choice-page .card .btn:hover,
+.cadastro-choice-page .card .btn:focus-visible {
+  filter: brightness(1.16);
+  outline: none;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .3), 0 11px 24px rgba(51, 78, 227, .35);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 820px) {
+  .cadastro-choice-page nav {
+    min-height: auto;
+    padding: 10px 20px 0;
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+  }
+
+  .cadastro-choice-page nav .center {
+    width: 100%;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .cadastro-choice-page nav .center ul {
+    padding-bottom: 8px;
+  }
+
+  .cadastro-choice-page .escolha-container {
+    min-height: auto;
+    padding: 76px 0 44px;
+  }
+}
+
+@media (max-width: 720px) {
+  .cadastro-choice-page .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .cadastro-choice-page nav .left a {
+    width: 78px;
+    height: 30px;
+  }
+
+  .cadastro-choice-page nav .right a {
+    min-width: auto;
+    padding: 0 12px;
+    font-size: .7rem;
+  }
+
+  .cadastro-choice-page .escolha-container {
+    width: min(100% - 24px, 480px);
+    padding: 60px 0 32px;
+  }
+
+  .cadastro-choice-page .card {
+    min-height: 0;
+    padding: 21px;
+  }
+}

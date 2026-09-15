@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atividades</title>
-    <link rel="stylesheet" href="<?= ASSET_URL ?>/css/estilo_homepage.css">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>">
     <style>
         body { margin: 0; background: #00002e; color: #fff; font-family: Arial, sans-serif; }
         .container { max-width: 900px; margin: 60px auto; padding: 20px; }
@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+    <?php require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
     <div class="container">
         <h1>Atividades</h1>
         <div class="card">

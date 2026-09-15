@@ -13,6 +13,8 @@ if ($usuarioExibicao !== '') {
 $role = $_SESSION['role'] ?? null;
 $estaLogado = $alunoId !== null && $usuario !== '' && in_array($role, ['aluno', 'professor'], true);
 $alunoLogado = $estaLogado && $role === 'aluno';
+$professorLogado = $estaLogado && $role === 'professor';
+$siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
 $resumo = [
     'xp' => null,
     'streak_atual' => null,
@@ -58,41 +60,11 @@ $areas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=29">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=37">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body class="home-page">
-    <nav class="home-nav" aria-label="Navegação principal">
-        <a class="home-logo" href="<?= app_route('/') ?>" aria-label="Página inicial">
-            <img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
-        </a>
-        <div class="home-nav-links">
-            <div class="trilha-dropdown">
-                <button class="trilha-trigger is-active" type="button" aria-expanded="false" aria-controls="trilha-menu">Trilha de aprendizado</button>
-                <div class="trilha-menu" id="trilha-menu">
-                    <?php foreach ($areas as $area): ?>
-                        <a href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>" data-auth-required><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></a>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <a href="<?= app_route('/videoaulas') ?>">Videoaulas</a>
-            <a href="<?= app_route('/aluno/simulados') ?>" data-auth-required>Simulados</a>
-            <a href="<?= app_route('/ranking') ?>">Ranking</a>
-            <a href="<?= app_route('/sobre') ?>">Sobre</a>
-        </div>
-        <div class="home-nav-actions">
-            <?php if ($estaLogado): ?>
-                <div class="account-link user-profile">
-                    <span class="profile-dot" aria-hidden="true"></span>
-                    <strong><?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></strong>
-                </div>
-                <button class="nav-cta logout-trigger" type="button" aria-haspopup="dialog" aria-controls="logout-modal">Sair</button>
-            <?php else: ?>
-                <a class="account-link" href="<?= app_route('/login') ?>"><span aria-hidden="true">&#9787;</span>Login</a>
-                <a class="nav-cta" href="<?= app_route('/cadastro') ?>">Começar agora</a>
-            <?php endif; ?>
-        </div>
-    </nav>
+    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 
     <?php if ($estaLogado): ?>
         <div class="logout-modal" id="logout-modal" role="presentation" hidden>
@@ -108,10 +80,9 @@ $areas = [
         </div>
     <?php endif; ?>
 
-    <?php if (!$alunoLogado): ?>
+    <?php if (!$estaLogado): ?>
         <div class="auth-modal" id="auth-modal" role="presentation" hidden>
-            <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" aria-describedby="auth-description">
-                <button class="auth-modal-close" type="button" aria-label="Fechar">&times;</button>
+            <section class="auth-dialog" role="dialog" aria-labelledby="auth-title" aria-describedby="auth-description">
                 <p class="auth-dialog-mark" aria-hidden="true">✦</p>
                 <h2 id="auth-title">Entre para continuar</h2>
                 <p id="auth-description">Crie sua conta ou faça login para acessar a trilha e seus exercícios.</p>
@@ -123,7 +94,32 @@ $areas = [
         </div>
     <?php endif; ?>
 
+    <div class="home-floating-art" aria-hidden="true">
+        <img class="home-floating-mask" src="<?= $siteRoot ?>/imgs/mask.png" alt="">
+        <?php if (!$estaLogado): ?>
+            <img class="guest-floating-page guest-floating-page-one" src="<?= $siteRoot ?>/imgs/pag1.png" alt="">
+            <img class="guest-floating-page guest-floating-page-two" src="<?= $siteRoot ?>/imgs/pag2.png" alt="">
+            <img class="guest-floating-page guest-floating-page-three" src="<?= $siteRoot ?>/imgs/pag3.png" alt="">
+            <img class="guest-floating-page guest-floating-page-four" src="<?= $siteRoot ?>/imgs/pag4.png" alt="">
+            <img class="guest-floating-page guest-floating-page-five" src="<?= $siteRoot ?>/imgs/pag5.png" alt="">
+            <img class="guest-floating-page guest-floating-page-six" src="<?= $siteRoot ?>/imgs/pag6.png" alt="">
+        <?php endif; ?>
+    </div>
+
     <main class="home-main">
+        <?php if ($professorLogado): ?>
+            <section class="home-hero professor-hero" aria-labelledby="hero-title">
+                <div class="hero-orbit" aria-hidden="true"></div>
+                <img class="hero-logo" src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
+                <p class="professor-hero-eyebrow">Área do professor</p>
+                <h1 id="hero-title">Seja bem-vindo, <span>professor <?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></span></h1>
+                <p>Organize conteúdos para seus alunos e acompanhe a evolução da turma pela plataforma.</p>
+                <div class="hero-actions">
+                    <a class="hero-button hero-button-primary" href="<?= app_route('/professor/videos') ?>">Cadastrar videoaulas <span aria-hidden="true">&rarr;</span></a>
+                    <a class="hero-button hero-button-secondary" href="<?= app_route('/ranking') ?>"><span aria-hidden="true">&#9733;</span> Visualizar ranking</a>
+                </div>
+            </section>
+        <?php else: ?>
         <section class="home-hero" aria-labelledby="hero-title">
             <div class="hero-orbit" aria-hidden="true"></div>
             <img class="hero-logo" src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
@@ -140,31 +136,50 @@ $areas = [
                 <a class="hero-button hero-button-secondary" href="#trilha"><span aria-hidden="true">&#9675;</span> Explorar trilha</a>
             </div>
         </section>
+        <?php endif; ?>
 
-        <aside class="home-profile-card" aria-label="Resumo do seu progresso">
-            <div class="profile-level">
-                <div class="level-badge" aria-hidden="true">◆</div>
-                <div>
-                    <span>Nível</span>
-                    <strong><?= $estaLogado ? 'Nível ' . (int) $nivel : 'Comece sua jornada' ?></strong>
-                </div>
-            </div>
-            <div class="xp-row">
-                <span><?= $estaLogado ? 'XP registrado: ' . ($xp ?? 0) : 'Entre para registrar XP' ?></span>
-                <?php if ($alunoLogado): ?>
-                    <div class="level-progress" aria-label="<?= $progressaoNivel['percentual'] ?>% do nível <?= $nivel ?>">
-                        <div class="level-progress-label"><span><?= $progressaoNivel['inicio'] ?> XP</span><strong><?= $xp ?? 0 ?> / <?= $progressaoNivel['fim'] ?> XP</strong></div>
-                        <span class="level-progress-track"><i style="--level-progress:<?= $progressaoNivel['percentual'] ?>%"></i></span>
-                        <small><?= $nivel < 5 ? $progressaoNivel['xp_restante'] . ' XP para o nível ' . ($nivel + 1) : 'Nível máximo alcançado nesta trilha' ?></small>
+        <?php if ($alunoLogado): ?>
+            <aside class="home-profile-card" aria-label="Resumo do seu progresso">
+                <div class="profile-level">
+                    <div class="level-badge" aria-hidden="true">◆</div>
+                    <div>
+                        <span>Nível</span>
+                        <strong>Nível <?= (int) $nivel ?></strong>
                     </div>
-                <?php endif; ?>
-            </div>
-            <div class="profile-stats">
-                <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $estaLogado && $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
-                <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>
-            </div>
-        </aside>
+                </div>
+                <div class="xp-row">
+                    <span>XP registrado: <?= $xp ?? 0 ?></span>
+                    <?php if ($alunoLogado): ?>
+                        <div class="level-progress" aria-label="<?= $progressaoNivel['percentual'] ?>% do nível <?= $nivel ?>">
+                            <div class="level-progress-label"><span><?= $progressaoNivel['inicio'] ?> XP</span><strong><?= $xp ?? 0 ?> / <?= $progressaoNivel['fim'] ?> XP</strong></div>
+                            <span class="level-progress-track"><i style="--level-progress:<?= $progressaoNivel['percentual'] ?>%"></i></span>
+                            <small><?= $nivel < 5 ? $progressaoNivel['xp_restante'] . ' XP para o nível ' . ($nivel + 1) : 'Nível máximo alcançado nesta trilha' ?></small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="profile-stats">
+                    <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
+                    <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>
+                </div>
+            </aside>
+        <?php endif; ?>
 
+        <?php if ($professorLogado): ?>
+            <section class="professor-home-actions" aria-label="Ações do professor">
+                <a class="professor-home-card" href="<?= app_route('/professor/videos') ?>">
+                    <span class="professor-action-mark" aria-hidden="true">01</span>
+                    <strong>Cadastrar videoaulas</strong>
+                    <p>Prepare aulas e disponibilize os conteúdos para os alunos acessarem.</p>
+                    <span class="professor-action-link">Gerenciar videoaulas <b aria-hidden="true">&rarr;</b></span>
+                </a>
+                <a class="professor-home-card" href="<?= app_route('/ranking') ?>">
+                    <span class="professor-action-mark" aria-hidden="true">02</span>
+                    <strong>Visualizar ranking</strong>
+                    <p>Confira o desempenho dos alunos e acompanhe quem mais evoluiu.</p>
+                    <span class="professor-action-link">Abrir ranking <b aria-hidden="true">&rarr;</b></span>
+                </a>
+            </section>
+        <?php else: ?>
         <section class="learning-section" id="trilha" aria-labelledby="learning-title">
             <header class="learning-header">
                 <div>
@@ -192,6 +207,7 @@ $areas = [
                 <p class="learning-summary"><?= $etapasConcluidas ?> de <?= $totalEtapas ?> etapas concluídas na sua jornada.</p>
             <?php endif; ?>
         </section>
+        <?php endif; ?>
 
         <section class="about-section" id="sobre" aria-labelledby="about-title">
             <div class="about-intro">
@@ -225,17 +241,21 @@ $areas = [
         const logoutModal = document.querySelector('#logout-modal');
         const logoutCancel = logoutModal?.querySelector('.logout-cancel');
         const authModal = document.querySelector('#auth-modal');
-        const authModalClose = authModal?.querySelector('.auth-modal-close');
         const authRequiredLinks = document.querySelectorAll('[data-auth-required]');
         let lastAuthTrigger = null;
+        let authModalTimeout = null;
 
-        const closeAuthModal = () => {
+        const closeAuthModal = (restoreFocus = false) => {
             if (!authModal) {
                 return;
             }
 
+            window.clearTimeout(authModalTimeout);
             authModal.hidden = true;
-            lastAuthTrigger?.focus();
+
+            if (restoreFocus) {
+                lastAuthTrigger?.focus();
+            }
         };
 
         const openAuthModal = (triggerElement = null) => {
@@ -244,8 +264,9 @@ $areas = [
             }
 
             lastAuthTrigger = triggerElement;
+            window.clearTimeout(authModalTimeout);
             authModal.hidden = false;
-            authModalClose?.focus();
+            authModalTimeout = window.setTimeout(closeAuthModal, 3000);
         };
 
         trigger?.addEventListener('click', () => {
@@ -266,7 +287,7 @@ $areas = [
                 trigger?.setAttribute('aria-expanded', 'false');
 
                 if (authModal && !authModal.hidden) {
-                    closeAuthModal();
+                    closeAuthModal(true);
                 } else if (logoutModal && !logoutModal.hidden) {
                     logoutModal.hidden = true;
                     logoutTrigger?.focus();
@@ -300,14 +321,6 @@ $areas = [
                     openAuthModal(link);
                 }
             });
-        });
-
-        authModalClose?.addEventListener('click', closeAuthModal);
-
-        authModal?.addEventListener('click', (event) => {
-            if (event.target === authModal) {
-                closeAuthModal();
-            }
         });
 
         if (new URLSearchParams(window.location.search).get('access') === 'login-required') {

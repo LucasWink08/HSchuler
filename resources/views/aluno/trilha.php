@@ -65,6 +65,24 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
     </style>
 </head>
 <body class="path-page">
+    <style>
+        .path-node { -webkit-tap-highlight-color: transparent; }
+        .path-node .node-circle { transform: none !important; }
+        .path-node:not(:disabled):hover .node-circle,
+        .path-node:focus-visible .node-circle {
+            filter: brightness(1.08);
+        }
+        .path-node.is-pressing .node-circle,
+        .path-node:not(:disabled):active .node-circle {
+            filter: brightness(.8) saturate(1.15);
+            box-shadow: inset 0 5px 12px rgba(0, 31, 84, .52), 0 0 0 5px rgba(40, 153, 235, .25);
+        }
+        .path-node.is-pressing { pointer-events: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .path-node .node-circle { transition: none; }
+        }
+    </style>
+    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
     <header class="path-header">
         <a class="path-back" href="<?= app_route('/') ?>">&larr; Voltar</a>
         <h1>Trilha de <?= $conteudo['titulo'] ?></h1>
@@ -142,7 +160,16 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
             </section>
         </aside>
     </section>
-    <script>document.querySelectorAll('.path-node[data-url]').forEach((button) => { button.addEventListener('click', () => window.location.assign(button.dataset.url)); });</script>
+    <script>
+        document.querySelectorAll('.path-node[data-url]').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (button.classList.contains('is-pressing')) return;
+                button.classList.add('is-pressing');
+                button.setAttribute('aria-busy', 'true');
+                window.setTimeout(() => window.location.assign(button.dataset.url), 130);
+            });
+        });
+    </script>
 </body>
 </html>
 

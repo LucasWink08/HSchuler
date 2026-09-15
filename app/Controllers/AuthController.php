@@ -61,7 +61,7 @@ class AuthController
         $_SESSION['user_id'] = $professor['id'];
         $_SESSION['role'] = $professor['role'];
 
-        header('Location: ' . app_route('/professor/dashboard'));
+        header('Location: ' . app_route('/'));
         exit;
     }
 

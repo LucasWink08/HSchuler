@@ -145,7 +145,7 @@ body::before {
   border-radius: 8px;
   box-shadow: 0 4px 0 #1b0754, 0 8px 16px rgba(0,0,0,.35);
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
 }
 
 .login .inputBx input[type="submit"]:hover {
@@ -170,6 +170,48 @@ body::before {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+
+.login .links.login-actions {
+  gap: 10px;
+  justify-content: center;
+  padding: 0;
+}
+
+.login .links.login-actions .login-action {
+  display: inline-flex;
+  min-height: 46px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 8px;
+  background: linear-gradient(45deg, #00002e, #5718cc);
+  box-shadow: 0 4px 0 #1b0754, 0 8px 16px rgba(0,0,0,.35);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+}
+
+.login .links.login-actions .login-action::before { content: none; }
+.login .links.login-actions .login-action:hover,
+.login .links.login-actions .login-action:focus-visible {
+  color: #fff;
+  outline: none;
+  text-shadow: none;
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 0 #1b0754, 0 12px 20px rgba(87, 24, 204, .32);
+}
+
+.login .inputBx input[type="submit"]:active,
+.login .links.login-actions .login-action:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #1b0754, 0 3px 8px rgba(0,0,0,.35);
 }
 
 nav {

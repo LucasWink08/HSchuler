@@ -1,12 +1,253 @@
 <?php
-$area=$area??'potenciacao'; $etapa=$etapa??[]; $questoes=$questoes??[]; $resumo=$resumo??[]; $total=count($questoes);
-$pct=(int)($resumo['total_etapas']??0)>0?(int)round(((int)($resumo['etapas_concluidas']??0)/(int)$resumo['total_etapas'])*100):0;
+$area = $area ?? 'potenciacao';
+$areaLabel = $areaLabel ?? (new QuestaoService())->getAreaLabel($area);
+$etapa = $etapa ?? [];
+$questoes = $questoes ?? [];
+$resumo = $resumo ?? [];
+$total = count($questoes);
+$etapasConcluidas = (int) ($resumo['etapas_concluidas'] ?? 0);
+$totalEtapas = (int) ($resumo['total_etapas'] ?? 0);
+$progressoGeral = $totalEtapas > 0 ? (int) round(($etapasConcluidas / $totalEtapas) * 100) : 0;
+$progressoInicial = $total > 0 ? (int) round(100 / $total) : 0;
+$etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
 ?>
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= htmlspecialchars($etapa['nome']??'Etapa') ?> | HSchuler</title><link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>"><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{min-height:100svh;margin:0;padding:18px;background:#030305 radial-gradient(circle at 15% 20%,#13213b88,transparent 25%);color:#f7f7fc;font-family:Arial,sans-serif}.shell{display:grid;grid-template-columns:236px minmax(0,846px) 286px;gap:52px;max-width:1480px;margin:auto}.panel,.card{border:1px solid #252d3a;border-radius:15px;background:#0a0c12eF;box-shadow:0 18px 45px #0005}.panel{padding:20px}.panel h2{margin:0;font-size:1rem}.ring{display:grid;place-items:center;width:118px;height:118px;margin:20px auto;border-radius:50%;background:conic-gradient(#a730ff calc(var(--p)*1%),#202633 0)}.ring:before{content:"";position:absolute;width:98px;height:98px;border-radius:50%;background:#0b0d13}.ring div{z-index:1;text-align:center}.ring strong{display:block;font-size:1.8rem}.stat{padding:16px 0;border-top:1px solid #252b37;color:#d3d5dd;font-size:.82rem}.stat b{display:block;margin-top:8px;color:#c342ff;font-size:.94rem}.head{padding:20px 28px 26px}.unit{margin:0;color:#b434ef;font-size:.75rem;font-weight:bold;text-transform:uppercase}.head h1{margin:6px 0;font-size:clamp(1.45rem,3vw,2rem)}.count{margin:0;color:#c2c7d2}.track{height:10px;overflow:hidden;margin:12px 0 19px;border-radius:9px;background:#1e2636}.track span,.side-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d02bff,#8536f3);transition:width .2s}.line{height:1px;background:#262d3a}.form{padding:23px 28px 26px}.question{display:none;border:0;margin:0;padding:0}.question.active{display:block}.question legend{width:100%;margin:0 0 24px;text-align:center;font-size:clamp(1.25rem,2.7vw,1.9rem);font-weight:600;line-height:1.35}.option{display:flex;align-items:center;gap:20px;min-height:74px;margin:14px 0;padding:13px 20px;border:2px solid #252d3b;border-radius:13px;background:#0b0d12;cursor:pointer}.option:hover,.option.selected{border-color:#079cf4;background:linear-gradient(90deg,#008ef530,#06457240);box-shadow:0 0 18px #0090ff30}.option input{position:absolute;opacity:0}.letter{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:50%;background:#273140;font-weight:bold;font-size:1.1rem}.selected .letter{background:linear-gradient(145deg,#1dc2ff,#0677e9)}.answer{font-size:1.1rem}.error{display:none;margin:16px 0 0;color:#ffabab}.error.show{display:block}.actions{display:flex;justify-content:space-between;gap:14px;margin-top:30px}.button{border:1px solid #334053;border-radius:10px;padding:13px 19px;color:#e8eef8;background:#10141d;font:inherit;font-weight:bold;text-decoration:none;cursor:pointer}.submit{min-width:245px;border:0;background:linear-gradient(100deg,#09aaf4,#0b8eed 54%,#8730fc);box-shadow:0 4px 18px #3057ff59}.submit[hidden]{display:none}.side-row{display:flex;justify-content:space-between;gap:8px;margin:17px 0;font-size:.9rem}.side-row b{color:#c138ff}.side-track{height:10px;overflow:hidden;border-radius:8px;background:#222936}.streak{padding-top:20px;margin-top:20px;border-top:1px solid #252b37}.result{padding:36px 28px;text-align:center}.numbers{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:25px 0}.numbers strong{display:block;font-size:1.7rem}.xp{color:#ffca4c}.result a{display:inline-block;background:linear-gradient(100deg,#09aaf4,#7934f5);border:0}.notice{margin:0 28px;padding:12px;border:1px solid #f16b6b;border-radius:9px;color:#ffd1d1;background:#dc46461f}.mobile-back{display:none}@media(max-width:1180px){.shell{grid-template-columns:minmax(0,846px) 270px;gap:20px}.left{display:none}}@media(max-width:790px){body{padding:12px}.shell{display:block}.right{display:none}.mobile-back{display:inline-block;margin:5px 0 15px;color:#dce7f6;text-decoration:none}.head,.form{padding-left:18px;padding-right:18px}.question legend{text-align:left}.option{gap:13px;min-height:62px;padding:9px 12px}.letter{flex-basis:38px;width:38px;height:38px}.answer{font-size:1rem}.submit{min-width:0;flex:1}}
-</style></head><body><main class="shell"><aside class="panel left"><h2>Seu progresso geral</h2><div class="ring" style="--p:<?= $pct ?>"><div><strong><?= $pct ?>%</strong><small>concluído</small></div></div><div class="stat">Nível atual<b>Nível <?= (int)($resumo['nivel']??1) ?></b></div><div class="stat">Sequência atual<b>🔥 <?= (int)($resumo['streak_atual']??0) ?> dias</b></div><div class="stat">Etapas concluídas<b><?= (int)($resumo['etapas_concluidas']??0) ?> de <?= (int)($resumo['total_etapas']??0) ?></b></div></aside>
-<section class="card"><a class="mobile-back" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>">← Voltar à trilha</a><header class="head"><p class="unit">Trilha de Potenciação</p><h1><?= htmlspecialchars($etapa['nome']??'') ?></h1><p class="count" id="count">Questão 1 de <?= $total ?></p><div class="track"><span id="bar" style="width:20%"></span></div><div class="line"></div></header>
-<?php if($resultado!==null): ?><div class="result"><h2>Etapa concluída!</h2><div class="numbers"><span><strong><?= $resultado['acertos'] ?></strong>acertos</span><span><strong><?= $resultado['erros'] ?></strong>erros</span><span class="xp"><strong>+<?= $resultado['xp_recebido'] ?></strong>XP recebido</span></div><p><?= $resultado['primeira_conclusao']?'A próxima etapa foi liberada e seu progresso foi atualizado.':'Resultado registrado. Esta etapa já concedeu a recompensa.' ?></p><a class="button" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>">Ver trilha atualizada</a></div>
-<?php else: ?><?php if($erroFormulario!==null): ?><p class="notice"><?= htmlspecialchars($erroFormulario) ?></p><?php endif; ?><form class="form" method="post" id="form" novalidate><?php foreach($questoes as $i=>$q): ?><fieldset class="question<?= $i===0?' active':'' ?>"><legend><?= htmlspecialchars($q['enunciado']) ?></legend><?php foreach($q['alternativas'] as $j=>$alt): ?><label class="option"><input type="radio" name="respostas[<?= $i ?>]" value="<?= $j ?>" required><span class="letter"><?= chr(65+$j) ?></span><span class="answer"><?= htmlspecialchars($alt) ?></span></label><?php endforeach; ?></fieldset><?php endforeach; ?><p class="error" id="error">Escolha uma alternativa para continuar.</p><div class="actions"><a class="button" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>" id="back">← Voltar</a><button class="button" type="button" id="prev" hidden>← Anterior</button><button class="button submit" type="button" id="next">Responder <span>+10 XP</span></button><button class="button submit" type="submit" id="finish" hidden>Finalizar etapa <span>+10 XP</span></button></div></form><?php endif; ?></section>
-<aside class="right"><section class="panel"><h2>Seu progresso</h2><div class="side-row"><span id="sideCount">Questão 1 de <?= $total ?></span><b>+10 XP</b></div><div class="side-track"><span id="sideBar" style="width:20%"></span></div><p class="streak">🔥 Sequência de <?= (int)($resumo['streak_atual']??0) ?> dias</p></section></aside></main>
-<?php if($resultado===null): ?><script>(()=>{const qs=[...document.querySelectorAll('.question')],total=qs.length,next=document.querySelector('#next'),prev=document.querySelector('#prev'),back=document.querySelector('#back'),finish=document.querySelector('#finish'),err=document.querySelector('#error');let active=0;function update(){qs.forEach((q,i)=>q.classList.toggle('active',i===active));let p=(active+1)/total*100;document.querySelector('#count').textContent=`Questão ${active+1} de ${total}`;document.querySelector('#sideCount').textContent=`Questão ${active+1} de ${total}`;document.querySelector('#bar').style.width=p+'%';document.querySelector('#sideBar').style.width=p+'%';prev.hidden=active===0;back.hidden=active!==0;next.hidden=active===total-1;finish.hidden=active!==total-1;err.classList.remove('show')}document.querySelectorAll('.option input').forEach(x=>x.addEventListener('change',()=>{document.querySelectorAll(`input[name="${x.name}"]`).forEach(y=>y.closest('.option').classList.toggle('selected',y.checked));err.classList.remove('show')}));next.onclick=()=>{if(!qs[active].querySelector(':checked'))return err.classList.add('show');active++;update()};prev.onclick=()=>{active--;update()};document.querySelector('#form').onsubmit=e=>{let empty=qs.findIndex(q=>!q.querySelector(':checked'));if(empty>=0){e.preventDefault();active=empty;update();err.classList.add('show')}};update()})();</script><?php endif; ?></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= htmlspecialchars($etapaNome, ENT_QUOTES, 'UTF-8') ?> | HSchuler</title>
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=36">
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body.stage-page {
+            display: block !important;
+            min-height: 100svh;
+            margin: 0;
+            padding: 0 20px 40px;
+            background: #02050a url("<?= app_asset('images/home/background.png') ?>") center top / cover fixed;
+            color: #f4f7ff;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body.stage-page .site-nav { margin-bottom: 26px; }
+        .stage-shell {
+            display: grid;
+            grid-template-columns: 230px minmax(0, 700px) 270px;
+            gap: clamp(20px, 3vw, 48px);
+            align-items: start;
+            width: min(1400px, 100%);
+            margin: 0 auto;
+        }
+        .stage-card {
+            border: 1px solid rgba(106, 145, 206, .3);
+            border-radius: 16px;
+            background: rgba(5, 10, 21, .88);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, .34);
+        }
+        .stage-summary { padding: 20px; }
+        .stage-summary h2, .stage-side h2 { margin: 0; font-size: 1rem; }
+        .stage-ring {
+            position: relative;
+            display: grid;
+            width: 118px;
+            height: 118px;
+            margin: 21px auto;
+            place-items: center;
+            border-radius: 50%;
+            background: conic-gradient(#ba39ff calc(var(--progress) * 1%), #202838 0);
+        }
+        .stage-ring::before { position: absolute; inset: 10px; border-radius: 50%; background: #090e18; content: ""; }
+        .stage-ring > div { position: relative; text-align: center; }
+        .stage-ring strong { display: block; font-size: 1.7rem; }
+        .stage-ring small { color: #c0cbe0; font-size: .68rem; }
+        .stage-stat { padding: 15px 0; border-top: 1px solid rgba(141, 165, 207, .2); color: #bdc8da; font-size: .78rem; }
+        .stage-stat b { display: block; margin-top: 7px; color: #c148ff; font-size: .94rem; }
+        .stage-main { overflow: hidden; }
+        .stage-head { padding: 24px 30px 22px; }
+        .stage-eyebrow { margin: 0; color: #c24bff; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+        .stage-head h1 { margin: 7px 0; font-size: clamp(1.45rem, 3vw, 2.15rem); }
+        .stage-count { margin: 0; color: #b9c4d7; }
+        .stage-progress { height: 10px; overflow: hidden; margin: 13px 0 0; border-radius: 999px; background: #202a3a; }
+        .stage-progress > i { display: block; width: var(--progress); height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d130ff, #813cf5); transition: width .2s ease; }
+        .stage-form { padding: 28px 30px 30px; border-top: 1px solid rgba(141, 165, 207, .2); }
+        .stage-question { display: none; margin: 0; padding: 0; border: 0; }
+        .stage-question.is-active { display: block; }
+        .stage-question legend { width: 100%; margin: 0 0 24px; font-size: clamp(1.2rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.35; text-align: center; }
+        .stage-option { display: flex; min-height: 70px; align-items: center; gap: 17px; margin: 13px 0; padding: 12px 18px; border: 2px solid #273347; border-radius: 13px; background: rgba(10, 15, 25, .94); cursor: pointer; transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+        .stage-option:hover, .stage-option:has(input:focus-visible), .stage-option.is-selected { border-color: #159ff2; background: linear-gradient(90deg, rgba(8, 137, 236, .2), rgba(56, 61, 174, .16)); box-shadow: 0 0 20px rgba(25, 147, 245, .16); }
+        .stage-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .stage-option-letter { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border-radius: 50%; background: #2a374a; font-weight: 700; }
+        .stage-option.is-selected .stage-option-letter { background: linear-gradient(145deg, #1cc5ff, #0879e4); }
+        .stage-option-answer { font-size: 1.05rem; line-height: 1.35; }
+        .stage-form-error { display: none; margin: 17px 0 0; color: #ffb5b5; }
+        .stage-form-error.is-visible { display: block; }
+        .stage-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; }
+        .stage-button { display: inline-flex; min-height: 45px; align-items: center; justify-content: center; padding: 11px 18px; border: 1px solid #34445e; border-radius: 10px; background: #101827; color: #edf5ff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; transition: filter .18s ease, transform .18s ease; }
+        .stage-button:hover, .stage-button:focus-visible { filter: brightness(1.15); outline: none; transform: translateY(-1px); }
+        .stage-button-primary { min-width: 225px; border: 0; background: linear-gradient(100deg, #09aaf4, #0b8eed 54%, #8730fc); box-shadow: 0 5px 20px rgba(48, 87, 255, .34); }
+        .stage-button[hidden] { display: none; }
+        .stage-result { padding: 42px 30px; text-align: center; }
+        .stage-result h2 { margin: 0; font-size: 1.75rem; }
+        .stage-result p { color: #c0cbe0; line-height: 1.5; }
+        .stage-result-values { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin: 26px 0; }
+        .stage-result-values strong { display: block; font-size: 1.65rem; }
+        .stage-result-values .is-xp { color: #ffcf55; }
+        .stage-notice { margin: 0 30px 28px; padding: 13px; border: 1px solid #ef7171; border-radius: 10px; background: rgba(201, 54, 54, .13); color: #ffd0d0; }
+        .stage-side { padding: 20px; }
+        .stage-side-row { display: flex; justify-content: space-between; gap: 10px; margin: 17px 0; color: #c0cbe0; font-size: .86rem; }
+        .stage-side-row b { color: #c448ff; white-space: nowrap; }
+        .stage-side .stage-progress { margin: 0; }
+        .stage-streak { margin: 20px 0 0; padding-top: 20px; border-top: 1px solid rgba(141, 165, 207, .2); color: #d6deec; }
+        .stage-empty { padding: 34px 30px; color: #c0cbe0; line-height: 1.5; text-align: center; }
+        @media (max-width: 1180px) { .stage-shell { grid-template-columns: minmax(0, 700px) 270px; } .stage-overview { display: none; } }
+        @media (max-width: 820px) {
+            body.stage-page { padding: 0 12px 28px; background-attachment: scroll; }
+            body.stage-page .site-nav { margin-bottom: 18px; }
+            .stage-shell { display: block; width: min(700px, 100%); }
+            .stage-side { display: none; }
+            .stage-head, .stage-form { padding-right: 20px; padding-left: 20px; }
+            .stage-question legend { text-align: left; }
+            .stage-option { min-height: 61px; gap: 12px; padding: 10px 12px; }
+            .stage-option-letter { width: 38px; height: 38px; flex-basis: 38px; }
+            .stage-option-answer { font-size: .98rem; }
+            .stage-button-primary { min-width: 0; flex: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) { .stage-progress > i, .stage-option, .stage-button { transition: none; } }
+    </style>
+</head>
+<body class="stage-page">
+    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+
+    <main class="stage-shell">
+        <aside class="stage-card stage-summary stage-overview" aria-label="Seu progresso geral">
+            <h2>Seu progresso geral</h2>
+            <div class="stage-ring" style="--progress:<?= $progressoGeral ?>">
+                <div><strong><?= $progressoGeral ?>%</strong><small>concluído</small></div>
+            </div>
+            <div class="stage-stat">Nível atual<b>Nível <?= (int) ($resumo['nivel'] ?? 1) ?></b></div>
+            <div class="stage-stat">Sequência atual<b>🔥 <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</b></div>
+            <div class="stage-stat">Etapas concluídas<b><?= $etapasConcluidas ?> de <?= $totalEtapas ?></b></div>
+        </aside>
+
+        <section class="stage-card stage-main" aria-labelledby="stage-title">
+            <header class="stage-head">
+                <p class="stage-eyebrow">Trilha de <?= htmlspecialchars($areaLabel, ENT_QUOTES, 'UTF-8') ?></p>
+                <h1 id="stage-title"><?= htmlspecialchars($etapaNome, ENT_QUOTES, 'UTF-8') ?></h1>
+                <p class="stage-count" id="stage-count">Questão 1 de <?= $total ?></p>
+                <div class="stage-progress" aria-label="Progresso da atividade"><i id="stage-progress" style="--progress:<?= $progressoInicial ?>%"></i></div>
+            </header>
+
+            <?php if ($resultado !== null): ?>
+                <div class="stage-result">
+                    <h2>Etapa concluída!</h2>
+                    <div class="stage-result-values">
+                        <span><strong><?= (int) $resultado['acertos'] ?></strong>acertos</span>
+                        <span><strong><?= (int) $resultado['erros'] ?></strong>erros</span>
+                        <span class="is-xp"><strong>+<?= (int) $resultado['xp_recebido'] ?></strong>XP recebido</span>
+                    </div>
+                    <p><?= $resultado['primeira_conclusao'] ? 'A próxima etapa foi liberada e seu progresso foi atualizado.' : 'Resultado registrado. Esta etapa já concedeu a recompensa.' ?></p>
+                    <a class="stage-button stage-button-primary" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>">Ver trilha atualizada</a>
+                </div>
+            <?php elseif ($total === 0): ?>
+                <div class="stage-empty">Ainda não há questões disponíveis para esta etapa.</div>
+            <?php else: ?>
+                <?php if ($erroFormulario !== null): ?><p class="stage-notice"><?= htmlspecialchars($erroFormulario, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
+                <form class="stage-form" method="post" id="stage-form" novalidate>
+                    <?php foreach ($questoes as $indice => $questao): ?>
+                        <fieldset class="stage-question<?= $indice === 0 ? ' is-active' : '' ?>">
+                            <legend><?= htmlspecialchars((string) $questao['enunciado'], ENT_QUOTES, 'UTF-8') ?></legend>
+                            <?php foreach ($questao['alternativas'] as $alternativaIndice => $alternativa): ?>
+                                <label class="stage-option">
+                                    <input type="radio" name="respostas[<?= $indice ?>]" value="<?= $alternativaIndice ?>" required>
+                                    <span class="stage-option-letter"><?= chr(65 + $alternativaIndice) ?></span>
+                                    <span class="stage-option-answer"><?= htmlspecialchars((string) $alternativa, ENT_QUOTES, 'UTF-8') ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </fieldset>
+                    <?php endforeach; ?>
+                    <p class="stage-form-error" id="stage-form-error">Escolha uma alternativa para continuar.</p>
+                    <div class="stage-actions">
+                        <a class="stage-button" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>" id="stage-back">← Voltar</a>
+                        <button class="stage-button" type="button" id="stage-prev" hidden>← Anterior</button>
+                        <button class="stage-button stage-button-primary" type="button" id="stage-next">Próxima questão</button>
+                        <button class="stage-button stage-button-primary" type="submit" id="stage-finish" hidden>Finalizar etapa +10 XP</button>
+                    </div>
+                </form>
+            <?php endif; ?>
+        </section>
+
+        <aside class="stage-card stage-side" aria-label="Progresso da atividade">
+            <h2>Seu progresso</h2>
+            <div class="stage-side-row"><span id="stage-side-count">Questão 1 de <?= $total ?></span><b>+10 XP ao concluir</b></div>
+            <div class="stage-progress"><i id="stage-side-progress" style="--progress:<?= $progressoInicial ?>%"></i></div>
+            <p class="stage-streak">🔥 Sequência de <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</p>
+        </aside>
+    </main>
+
+    <?php if ($resultado === null && $total > 0): ?>
+        <script>
+            (() => {
+                const questions = [...document.querySelectorAll('.stage-question')];
+                const total = questions.length;
+                const next = document.querySelector('#stage-next');
+                const previous = document.querySelector('#stage-prev');
+                const back = document.querySelector('#stage-back');
+                const finish = document.querySelector('#stage-finish');
+                const error = document.querySelector('#stage-form-error');
+                const form = document.querySelector('#stage-form');
+                let active = 0;
+
+                const update = () => {
+                    questions.forEach((question, index) => question.classList.toggle('is-active', index === active));
+                    const progress = Math.round(((active + 1) / total) * 100);
+                    document.querySelector('#stage-count').textContent = `Questão ${active + 1} de ${total}`;
+                    document.querySelector('#stage-side-count').textContent = `Questão ${active + 1} de ${total}`;
+                    document.querySelector('#stage-progress').style.setProperty('--progress', `${progress}%`);
+                    document.querySelector('#stage-side-progress').style.setProperty('--progress', `${progress}%`);
+                    previous.hidden = active === 0;
+                    back.hidden = active !== 0;
+                    next.hidden = active === total - 1;
+                    finish.hidden = active !== total - 1;
+                    error.classList.remove('is-visible');
+                };
+
+                document.querySelectorAll('.stage-option input').forEach((input) => {
+                    input.addEventListener('change', () => {
+                        document.querySelectorAll(`input[name="${input.name}"]`).forEach((choice) => {
+                            choice.closest('.stage-option').classList.toggle('is-selected', choice.checked);
+                        });
+                        error.classList.remove('is-visible');
+                    });
+                });
+
+                next.addEventListener('click', () => {
+                    if (!questions[active].querySelector(':checked')) {
+                        error.classList.add('is-visible');
+                        return;
+                    }
+                    active += 1;
+                    update();
+                });
+
+                previous.addEventListener('click', () => {
+                    active -= 1;
+                    update();
+                });
+
+                form.addEventListener('submit', (event) => {
+                    const unanswered = questions.findIndex((question) => !question.querySelector(':checked'));
+                    if (unanswered >= 0) {
+                        event.preventDefault();
+                        active = unanswered;
+                        update();
+                        error.classList.add('is-visible');
+                    }
+                });
+
+                update();
+            })();
+        </script>
+    <?php endif; ?>
+</body>
+</html>

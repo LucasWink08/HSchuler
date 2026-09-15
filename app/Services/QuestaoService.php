@@ -218,11 +218,81 @@ class QuestaoService
     {
         return match ($area) {
             'fracoes-algebricas' => $this->getQuizzesFracoesAlgebricas(),
+            'produtos-notaveis' => $this->getQuizzesProdutosNotaveis(),
             'equacoes' => $this->getQuizzesEquacoes(),
             'inequacoes' => $this->getQuizzesInequacoes(),
             'fatoracao' => $this->getQuizzesFatoracao(),
             default => [],
         };
+    }
+
+    private function getQuizzesProdutosNotaveis(): array
+    {
+        return [
+            'padroesalgebricos' => [
+                ['Qual expressão representa o quadrado de uma soma?', ['(a + b)²', '(a + b)(a - b)', 'a² - b²', 'a² + b²'], 0],
+                ['Em (x + 4)², quais são os dois termos do binômio?', ['x e 4', 'x² e 4²', 'x + 4 e 2', 'x e x + 4'], 0],
+                ['Qual produto é uma soma pela diferença?', ['(a + b)(a - b)', '(a + b)²', '(a - b)²', '(a + b)(a + b)'], 0],
+                ['Qual é o termo do meio em (a + b)²?', ['2ab', 'a²b²', 'a + b', 'a² + b²'], 0],
+                ['Qual identidade gera a² - b²?', ['(a + b)(a - b)', '(a + b)²', '(a - b)²', 'a(a - b)'], 0],
+            ],
+            'quadradodasoma' => [
+                ['Qual é o desenvolvimento de (x + 3)²?', ['x² + 6x + 9', 'x² + 3x + 9', 'x² + 9', 'x² - 6x + 9'], 0],
+                ['Qual é o desenvolvimento de (a + b)²?', ['a² + 2ab + b²', 'a² - 2ab + b²', 'a² + b²', '2a + 2b'], 0],
+                ['Qual é o resultado de (y + 5)²?', ['y² + 10y + 25', 'y² + 5y + 25', 'y² + 25', 'y² - 10y + 25'], 0],
+                ['No quadrado da soma, o termo do meio é:', ['O dobro do produto dos termos', 'A soma dos quadrados', 'A diferença dos termos', 'O produto dos quadrados'], 0],
+                ['Qual expressão é igual a x² + 8x + 16?', ['(x + 4)²', '(x - 4)²', '(x + 8)²', '(x + 2)²'], 0],
+            ],
+            'quadradodadiferenca' => [
+                ['Qual é o desenvolvimento de (x - 3)²?', ['x² - 6x + 9', 'x² - 9', 'x² + 6x + 9', 'x² - 3x + 9'], 0],
+                ['Qual é o desenvolvimento de (a - b)²?', ['a² - 2ab + b²', 'a² + 2ab + b²', 'a² - b²', 'a² + b²'], 0],
+                ['Qual é o resultado de (y - 4)²?', ['y² - 8y + 16', 'y² - 16', 'y² + 8y + 16', 'y² - 4y + 16'], 0],
+                ['Qual expressão é igual a x² - 10x + 25?', ['(x - 5)²', '(x + 5)²', '(x - 10)²', '(x - 25)²'], 0],
+                ['No quadrado da diferença, o termo do meio é:', ['Negativo e igual a 2ab', 'Positivo e igual a 2ab', 'Sempre zero', 'Igual a a²b²'], 0],
+            ],
+            'exerciciosdeprodutosnotaveis' => [
+                ['Qual é o resultado de (2x + 1)²?', ['4x² + 4x + 1', '4x² + 1', '2x² + 4x + 1', '4x² - 4x + 1'], 0],
+                ['Qual é o resultado de (3a - 2)²?', ['9a² - 12a + 4', '9a² - 4', '9a² + 12a + 4', '3a² - 12a + 4'], 0],
+                ['Qual é o resultado de (x + 7)(x - 7)?', ['x² - 49', 'x² + 49', 'x² - 14x + 49', 'x² + 14x + 49'], 0],
+                ['Qual é o resultado de (m + n)²?', ['m² + 2mn + n²', 'm² - 2mn + n²', 'm² - n²', '2m + 2n'], 0],
+                ['Qual expressão fatorada representa x² - 16?', ['(x + 4)(x - 4)', '(x - 4)²', '(x + 16)(x - 1)', 'x(x - 16)'], 0],
+            ],
+            'revisao' => [
+                ['Qual é o resultado de (x + 2)²?', ['x² + 4x + 4', 'x² + 2x + 4', 'x² + 4', 'x² - 4x + 4'], 0],
+                ['Qual é o resultado de (x - 6)(x + 6)?', ['x² - 36', 'x² + 36', 'x² - 12x + 36', 'x² + 12x + 36'], 0],
+                ['Qual expressão corresponde a a² + 14a + 49?', ['(a + 7)²', '(a - 7)²', '(a + 14)²', '(a + 49)²'], 0],
+                ['Qual é o termo independente de (x - 9)²?', ['81', '-81', '18', '-18'], 0],
+                ['Qual identidade simplifica (p + q)(p - q)?', ['p² - q²', 'p² + 2pq + q²', 'p² - 2pq + q²', 'p + q'], 0],
+            ],
+            'somapeladiferenca' => [
+                ['Qual é o resultado de (a + b)(a - b)?', ['a² - b²', 'a² + b²', 'a² - 2ab + b²', 'a² + 2ab + b²'], 0],
+                ['Qual é o resultado de (x + 5)(x - 5)?', ['x² - 25', 'x² + 25', 'x² - 10x + 25', 'x² + 10x + 25'], 0],
+                ['Qual é o resultado de (3y + 2)(3y - 2)?', ['9y² - 4', '9y² + 4', '9y² - 12y + 4', '6y² - 4'], 0],
+                ['Qual é o resultado de (m + 1)(m - 1)?', ['m² - 1', 'm² + 1', 'm² - 2m + 1', 'm² + 2m + 1'], 0],
+                ['Qual produto fatorado corresponde a 4x² - 9?', ['(2x + 3)(2x - 3)', '(2x - 3)²', '(4x + 3)(x - 3)', '(2x + 9)(2x - 1)'], 0],
+            ],
+            'aplicacoes' => [
+                ['A área de um quadrado de lado x + 2 é:', ['x² + 4x + 4', 'x² + 2x + 4', 'x² + 4', '2x + 4'], 0],
+                ['Um retângulo tem lados x + 4 e x - 4. Sua área é:', ['x² - 16', 'x² + 16', 'x² - 8x + 16', 'x² + 8x + 16'], 0],
+                ['Qual é o resultado de 102² usando produto notável?', ['10.404', '10.204', '10.000', '10.040'], 0],
+                ['Qual é o resultado de 98 × 102?', ['9.996', '10.000', '9.800', '10.004'], 0],
+                ['Qual expressão calcula a diferença entre os quadrados de x e 3?', ['(x + 3)(x - 3)', '(x - 3)²', '(x + 3)²', 'x(x - 3)'], 0],
+            ],
+            'formulas' => [
+                ['Qual é a fórmula correta para (a + b)²?', ['a² + 2ab + b²', 'a² - 2ab + b²', 'a² - b²', 'a² + b²'], 0],
+                ['Qual é a fórmula correta para (a - b)²?', ['a² - 2ab + b²', 'a² + 2ab + b²', 'a² - b²', 'a² + b²'], 0],
+                ['Qual fórmula corresponde a a² - b²?', ['(a + b)(a - b)', '(a - b)²', '(a + b)²', 'a(a - b)'], 0],
+                ['Em (a + b)², qual termo é sempre positivo?', ['b²', '-2ab', '-b²', 'a - b'], 0],
+                ['Em (a - b)², qual termo do meio aparece?', ['-2ab', '+2ab', 'ab²', '-a²b²'], 0],
+            ],
+            'desafiofinal' => [
+                ['Qual é o resultado de (x + 3)² - (x - 3)²?', ['12x', '6x', '18', '12x²'], 0],
+                ['Qual é o resultado de (2x + 3)(2x - 3)?', ['4x² - 9', '4x² + 9', '4x² - 12x + 9', '2x² - 9'], 0],
+                ['Qual expressão é equivalente a x² - 25?', ['(x + 5)(x - 5)', '(x - 5)²', '(x + 25)(x - 1)', 'x(x - 25)'], 0],
+                ['Qual é o resultado de (a - 2)² + 4a?', ['a² + 4', 'a² - 4a + 4', 'a² + 4a + 4', 'a² - 4'], 0],
+                ['Qual é o resultado de (x + 1)² - 2x?', ['x² + 1', 'x² + 2x + 1', 'x² - 1', '2x² + 1'], 0],
+            ],
+        ];
     }
 
     private function getQuizzesFracoesAlgebricas(): array

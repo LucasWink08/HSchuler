@@ -97,7 +97,8 @@
     </style>
 </head>
 <body class="pre-simulado">
-    <nav class="prep-nav" aria-label="Navega&ccedil;&atilde;o do simulado">
+    <?php $navbarActive = 'simulados'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+    <nav class="prep-nav" aria-label="Navega&ccedil;&atilde;o do simulado" hidden>
         <a href="<?= app_route('/') ?>">&larr; Voltar para a home</a>
         <a href="<?= app_route('/ranking') ?>">Ranking</a>
     </nav>
@@ -107,8 +108,7 @@
         <h1>Voc&ecirc; est&aacute; preparado?</h1>
         <p>Voc&ecirc; vai come&ccedil;ar um simulado de 20 quest&otilde;es.</p>
 
-        <form method="get" action="<?= APP_URL ?>/index.php">
-            <input type="hidden" name="route" value="/aluno/simulados">
+        <form method="get" action="<?= app_route('/aluno/simulados') ?>">
             <input type="hidden" name="iniciar" value="1">
             <button class="start-button" type="submit">Come&ccedil;ar simulado</button>
         </form>

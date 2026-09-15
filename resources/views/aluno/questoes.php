@@ -30,6 +30,7 @@ $areaLabel = $this->questaoService->getAreaLabel($area);
     </style>
 </head>
 <body>
+    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
     <main class="page">
         <header class="header">
             <div>

@@ -36,10 +36,7 @@ unset($trilha);
     </style>
 </head>
 <body class="trail-choice-page">
-    <nav class="choice-nav" aria-label="Navegação de trilhas">
-        <a class="choice-brand" href="<?= app_route('/') ?>"><img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler"><span>HSchuler</span></a>
-        <a class="choice-back" href="<?= app_route('/sobre') ?>">← Voltar</a>
-    </nav>
+    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
     <main class="choice-main">
         <header class="choice-head"><p>Trilhas de aprendizado</p><h1>Escolha sua <span>jornada</span></h1><span>Selecione um conteúdo para estudar no seu ritmo. Cada trilha possui etapas interativas, questões e progresso salvo na sua conta.</span></header>
         <section class="trails-grid" aria-label="Trilhas disponíveis">

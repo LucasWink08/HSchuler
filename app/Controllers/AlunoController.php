@@ -21,14 +21,14 @@ class AlunoController
     public function trilha(): void
     {
         $this->requireAluno();
-        $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
+        $area = $this->getAreaDaRequisicao();
         require APP_ROOT . '/resources/views/aluno/trilha.php';
     }
 
     public function etapa(): void
     {
         $this->requireAluno();
-        $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
+        $area = $this->getAreaDaRequisicao();
         $etapaId = filter_var($_GET['etapa_id'] ?? null, FILTER_VALIDATE_INT);
         $etapaNome = trim((string) ($_GET['etapa'] ?? ''));
         $alunoId = $this->getAlunoId();
@@ -64,12 +64,13 @@ class AlunoController
             }
         }
         $resumo = $this->trilhaService->getResumo($alunoId, $area);
+        $areaLabel = $this->questaoService->getAreaLabel($area);
         require APP_ROOT . '/resources/views/aluno/etapa.php';
     }
     public function simulados(): void
     {
         $this->requireAluno();
-        $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
+        $area = $this->getAreaDaRequisicao();
         $questoesDisponiveis = $this->questaoService->getQuestoesSimulado();
 
         if (($_GET['iniciar'] ?? '') !== '1') {
@@ -119,45 +120,53 @@ class AlunoController
     public function questoes(): void
     {
         $this->requireAluno();
-        $area = preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['area'] ?? 'potenciacao')) ?: 'potenciacao';
-        $recorte = trim((string) ($_GET['etapa'] ?? ''));
-        $recorte = preg_replace('/[^\p{L}\p{N}\s-]/u', '', $recorte) ?? '';
-        $recorte = function_exists('mb_substr') ? mb_substr($recorte, 0, 80, 'UTF-8') : substr($recorte, 0, 80);
-        $questoes = array_slice($this->questaoService->getQuestoes($area, $recorte), 0, 5);
-        $resultado = null;
+        $area = $this->getAreaDaRequisicao();
+        $alunoId = $this->getAlunoId();
+        $etapas = $this->trilhaService->getEtapas($area);
+        $estados = $alunoId === null ? [] : $this->trilhaService->getEstadosEtapas($alunoId, $area);
+        $etapaSolicitada = trim((string) ($_GET['etapa'] ?? ''));
+        $etapaSelecionada = null;
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $respostas = $_POST['respostas'] ?? [];
-            $acertos = 0;
-            $alunoId = $this->getAlunoId();
+        foreach ($etapas as $etapa) {
+            $identificador = $this->trilhaService->normalizarIdentificador((string) $etapa['nome']);
+            if ($etapaSolicitada !== '' && $identificador === $this->trilhaService->normalizarIdentificador($etapaSolicitada)
+                && ($estados[$identificador] ?? 'locked') !== 'locked') {
+                $etapaSelecionada = $etapa;
+                break;
+            }
+        }
 
-            foreach ($questoes as $indice => $questao) {
-                $resposta = isset($respostas[$indice]) ? (string) $respostas[$indice] : null;
-                $correta = $this->questaoService->corrigir($questao, $resposta);
-
-                if ($alunoId !== null && isset($questao['id']) && $resposta !== null) {
-                    $registro = $this->trilhaService->registrarResposta($alunoId, (int) $questao['id'], $resposta);
-                    if ($registro !== null) {
-                        $correta = $registro['correta'];
-                    }
-                }
-
-                if ($correta) {
-                    $acertos++;
+        if ($etapaSelecionada === null) {
+            foreach ($etapas as $etapa) {
+                $identificador = $this->trilhaService->normalizarIdentificador((string) $etapa['nome']);
+                if (in_array($estados[$identificador] ?? 'locked', ['current', 'checkpoint'], true)) {
+                    $etapaSelecionada = $etapa;
+                    break;
                 }
             }
+        }
 
-            $resultado = [
-                'acertos' => $acertos,
-                'total' => count($questoes),
-                'percentual' => count($questoes) > 0 ? (int) round(($acertos / count($questoes)) * 100) : 0,
-            ];
+        if ($etapaSelecionada === null) {
+            foreach (array_reverse($etapas) as $etapa) {
+                $identificador = $this->trilhaService->normalizarIdentificador((string) $etapa['nome']);
+                if (($estados[$identificador] ?? 'locked') === 'complete') {
+                    $etapaSelecionada = $etapa;
+                    break;
+                }
+            }
+        }
 
+        if ($etapaSelecionada === null) {
             header('Location: ' . app_route('/aluno/trilha') . '&area=' . urlencode($area));
             exit;
         }
 
-        require APP_ROOT . '/resources/views/aluno/questoes.php';
+        $url = app_route('/aluno/etapa')
+            . '&area=' . urlencode($area)
+            . '&etapa_id=' . (int) $etapaSelecionada['id']
+            . '&etapa=' . urlencode((string) $etapaSelecionada['nome']);
+        header('Location: ' . $url);
+        exit;
     }
 
     public function ranking(): void
@@ -185,6 +194,13 @@ class AlunoController
         $alunoId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
 
         return $alunoId !== false && $alunoId !== null && $alunoId > 0 ? $alunoId : null;
+    }
+
+    private function getAreaDaRequisicao(): string
+    {
+        $area = preg_replace('/[^a-z0-9-]/', '', strtolower((string) ($_GET['area'] ?? 'potenciacao'))) ?: 'potenciacao';
+
+        return array_key_exists($area, $this->questaoService->getAreas()) ? $area : 'potenciacao';
     }
 }
 

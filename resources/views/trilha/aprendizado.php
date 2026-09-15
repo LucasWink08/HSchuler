@@ -270,7 +270,8 @@
   </style>
 </head>
 <body>
-  <nav>
+  <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+  <nav hidden>
     <div class="left">
       <ul>
         <li><a href="<?= app_route('/') ?>">Home</a></li>

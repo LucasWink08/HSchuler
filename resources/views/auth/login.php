@@ -1,67 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - HSchuler</title>
-    <link rel="stylesheet" type="text/css" href="<?= ASSET_URL ?>/css/estilo_login.css">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=33">
+    <link rel="stylesheet" href="<?= app_asset('css/auth_theme.css') ?>?v=4">
 </head>
-<body>
-<nav>
-  <div class="left">
-    <ul>
-      <li><a href="<?= app_route('/') ?>">Home</a></li>
-    </ul>
-  </div>
-  <div class="center">
-    <ul>
-      <li><a href="<?= app_route('/') ?>">Trilha de aprendizado</a></li>
-      <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
-      <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
-      <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
-      <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>
-    </ul>
-  </div>
-  <div class="right">
-    <ul>
-      <li><a href="<?= app_route('/login') ?>">Login</a></li>
-    </ul>
-  </div>
-</nav>
+<body class="home-page auth-page">
+<?php require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 <div class="ring">
     <i style="--clr:#00002e;"></i>
     <i style="--clr:#ffffff;"></i>
     <i style="--clr:#00002e;"></i>
   <div class="login">
     <h2>Login</h2>
+    <p class="auth-description">Acesse sua jornada de aprendizagem.</p>
     <?php
     if (isset($_GET['auth_error'])) {
-        echo '<div class="error-message">' . htmlspecialchars($_GET['auth_error']) . '</div>';
+        echo '<div class="error-message" role="alert">' . htmlspecialchars($_GET['auth_error'], ENT_QUOTES, 'UTF-8') . '</div>';
     }
     if (isset($_GET['success'])) {
-        echo '<div class="success-message">' . htmlspecialchars($_GET['success']) . '</div>';
+        echo '<div class="success-message" role="status">' . htmlspecialchars($_GET['success'], ENT_QUOTES, 'UTF-8') . '</div>';
     }
     ?>
-    <form action="<?= APP_URL ?>/index.php?route=/auth/login-submit" method="post">
+    <form action="<?= app_route('/auth/login-submit') ?>" method="post">
           <div class="inputBx">
-            <input type="text" placeholder="Usuario" name="usuario" required>
+            <label class="sr-only" for="usuario">Usu&aacute;rio</label>
+            <input id="usuario" type="text" placeholder="Usu&aacute;rio" name="usuario" required autocomplete="username">
           </div>
           <div class="inputBx">
-            <input type="password" placeholder="Senha" name="senha" required>
+            <label class="sr-only" for="senha">Senha</label>
+            <input id="senha" type="password" placeholder="Senha" name="senha" required autocomplete="current-password">
           </div>
           <div class="inputBx">
             <input type="submit" value="Entrar">
           </div>
-          <div class="links">
-            <a href="<?= app_route('/login/professor') ?>">Login de professor</a>
-            <a href="<?= APP_URL ?>/index.php?route=/cadastro" class="signup-trigger">Faça seu cadastro</a>
-          </div>
-          <div class="signup-dropdown">
-            <p>Faça login para acessar o cadastro ou <a href="<?= app_route('/cadastro') ?>">clique aqui</a> para criar uma conta.</p>
+          <div class="links login-actions">
+            <a class="login-action login-action-secondary" href="<?= app_route('/login/professor') ?>">Login de professor</a>
+            <a class="login-action login-action-primary" href="<?= app_route('/cadastro') ?>">Criar conta</a>
           </div>
     </form>
   </div>
 </div>
-<script src="<?= ASSET_URL ?>/js/javascript.js"></script>
+<script src="<?= app_asset('js/javascript.js') ?>"></script>
 </body>
 </html>
