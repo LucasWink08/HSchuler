@@ -12,7 +12,7 @@ return [
     '/cadastro' => APP_ROOT . '/resources/views/auth/escolha_cadastro.php',
     '/auth/register-aluno-submit' => function () { (new AuthController())->registerAlunoSubmit(); },
     '/auth/register-professor-submit' => function () { (new AuthController())->registerProfessorSubmit(); },
-    '/videoaulas' => APP_ROOT . '/resources/views/trilha/videoaulas.php',
+    '/videoaulas' => function () { (new VideoaulaController())->index(); },
     '/sobre' => APP_ROOT . '/resources/views/layouts/sobre.php',
     '/trilhas' => APP_ROOT . '/resources/views/trilha/escolher.php',
     '/ranking' => APP_ROOT . '/resources/views/ranking/ranking.php',
@@ -25,6 +25,8 @@ return [
     '/aluno/ranking' => function () { (new AlunoController())->ranking(); },
     '/professor/dashboard' => function () { (new ProfessorController())->dashboard(); },
     '/professor/videos' => function () { (new ProfessorController())->videos(); },
+    '/professor/video/cadastro' => function () { (new ProfessorController())->videoForm(); },
+    '/professor/video/salvar' => function () { (new ProfessorController())->saveVideo(); },
     '/professor/atividades' => function () { (new ProfessorController())->atividades(); },
     '/professor/gerador-questoes' => function () { (new ProfessorController())->geradorQuestoes(); },
 ];

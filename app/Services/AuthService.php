@@ -54,4 +54,17 @@ class AuthService
         $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
         return $this->repository->createProfessor($siape, $nome, $email, $senhaHash);
     }
+
+    public function getProfessorRegistrationError(string $siape, string $email): ?string
+    {
+        if ($this->repository->findProfessorBySiape($siape)) {
+            return 'Este SIAPE já está cadastrado. Faça login para continuar.';
+        }
+
+        if ($this->repository->findProfessorByEmail($email)) {
+            return 'Este e-mail já está cadastrado para outro professor.';
+        }
+
+        return null;
+    }
 }

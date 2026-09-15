@@ -42,6 +42,7 @@
 }
 
 .site-nav-links a,
+.site-nav-pending,
 .site-nav-login,
 .site-nav-profile {
   color: rgba(217, 227, 252, .78);
@@ -66,6 +67,11 @@
 
 .site-nav-links a.is-active {
   text-shadow: 0 0 12px rgba(121, 151, 255, .8);
+}
+
+.site-nav-pending {
+  cursor: default;
+  opacity: .62;
 }
 
 .site-nav-actions {
@@ -161,6 +167,7 @@ body .site-nav .site-nav-links,
 body .site-nav .site-nav-actions { display: flex; align-items: center; }
 body .site-nav .site-nav-links { justify-content: center; gap: clamp(18px, 2vw, 40px); }
 body .site-nav .site-nav-links a,
+body .site-nav .site-nav-pending,
 body .site-nav .site-nav-login,
 body .site-nav .site-nav-profile { color: rgba(217, 227, 252, .78); font-size: .78rem; font-weight: 500; text-decoration: none; }
 
@@ -173,5 +180,5 @@ body .site-nav .site-nav-profile { color: rgba(217, 227, 252, .78); font-size: .
   body .site-nav { width: min(100% - 24px, 480px); }
   body .site-nav .site-nav-brand { width: 84px; height: 32px; }
   body .site-nav .site-nav-links { gap: 17px; }
-  body .site-nav .site-nav-links a { font-size: .67rem; }
+  body .site-nav .site-nav-links a, body .site-nav .site-nav-pending { font-size: .67rem; }
 }

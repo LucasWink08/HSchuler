@@ -29,6 +29,16 @@ class UserRepository
         return $professor ?: null;
     }
 
+    public function findProfessorByEmail(string $email): ?array
+    {
+        $sql = 'SELECT id, email FROM professor WHERE email = :email LIMIT 1';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':email' => $email]);
+
+        $professor = $stmt->fetch();
+        return $professor ?: null;
+    }
+
     public function findByEmail(string $email): ?array
     {
         $sql = 'SELECT id, email FROM aluno WHERE email = :email LIMIT 1';

@@ -11,15 +11,22 @@ if ($navbarLoggedIn) {
         : ucwords($navbarName);
 }
 
-$navbarLinks = [
-    'trilhas' => ['label' => 'Trilha de aprendizado', 'route' => '/trilhas'],
-    'videoaulas' => ['label' => 'Videoaulas', 'route' => '/videoaulas'],
-    'simulados' => ['label' => 'Simulados', 'route' => '/aluno/simulados'],
-    'ranking' => ['label' => 'Ranking', 'route' => '/ranking'],
-    'sobre' => ['label' => 'Sobre', 'route' => '/sobre'],
-];
+$navbarLinks = $navbarRole === 'professor'
+    ? [
+        'publicar-videoaula' => ['label' => 'Publicar videoaula', 'route' => '/professor/videos'],
+        'desempenho' => ['label' => 'Desempenho dos alunos', 'route' => null],
+        'sobre' => ['label' => 'Sobre o sistema', 'route' => '/sobre'],
+        'ranking' => ['label' => 'Ranking', 'route' => '/ranking'],
+    ]
+    : [
+        'trilhas' => ['label' => 'Trilha de aprendizado', 'route' => '/trilhas'],
+        'videoaulas' => ['label' => 'Videoaulas', 'route' => '/videoaulas'],
+        'simulados' => ['label' => 'Simulados', 'route' => '/aluno/simulados'],
+        'ranking' => ['label' => 'Ranking', 'route' => '/ranking'],
+        'sobre' => ['label' => 'Sobre', 'route' => '/sobre'],
+    ];
 ?>
-<link rel="stylesheet" href="<?= app_asset('css/site_nav.css') ?>?v=1">
+<link rel="stylesheet" href="<?= app_asset('css/site_nav.css') ?>?v=2">
 <nav class="site-nav" aria-label="Navegação principal">
     <a class="site-nav-brand" href="<?= app_route('/') ?>" aria-label="Página inicial">
         <img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
@@ -27,7 +34,11 @@ $navbarLinks = [
 
     <div class="site-nav-links">
         <?php foreach ($navbarLinks as $key => $link): ?>
-            <a class="<?= $navbarActive === $key ? 'is-active' : '' ?>" href="<?= app_route($link['route']) ?>"><?= $link['label'] ?></a>
+            <?php if ($link['route'] === null): ?>
+                <span class="site-nav-pending" title="Em breve"><?= $link['label'] ?></span>
+            <?php else: ?>
+                <a class="<?= $navbarActive === $key ? 'is-active' : '' ?>" href="<?= app_route($link['route']) ?>"><?= $link['label'] ?></a>
+            <?php endif; ?>
         <?php endforeach; ?>
     </div>
 

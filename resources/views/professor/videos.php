@@ -3,30 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vídeos</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>">
-    <style>
-        body.teacher-videos-page { display: block; min-height: 100vh; margin: 0; padding: 0 20px 44px; background: #00002e; color: #fff; font-family: Arial, sans-serif; }
-        .container { max-width: 900px; margin: 48px auto; padding: 20px; }
-        .card { border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; background: rgba(255,255,255,0.04); padding: 20px; margin-bottom: 18px; }
-        .actions a { display: inline-block; margin-top: 14px; padding: 10px 16px; border: 1px solid rgba(255,255,255,.25); border-radius: 8px; background: linear-gradient(45deg, #00002e, #5718cc); color: white; box-shadow: 0 4px 0 #1b0754, 0 8px 16px rgba(0,0,0,.35); text-decoration: none; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
-        .actions a:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1b0754, 0 12px 20px rgba(87,24,204,.32); filter: brightness(1.08); }
-    </style>
+    <title>Publicar videoaulas | HSchuler</title>
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=37">
+    <link rel="stylesheet" href="<?= app_asset('css/professor_videos.css') ?>?v=1">
 </head>
 <body class="teacher-videos-page">
-    <?php $navbarActive = 'videoaulas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
-    <div class="container">
-        <h1>Vídeos</h1>
-        <div class="card">
-            <h3>Fatoração por agrupamento</h3>
-            <p>Videoaula introdutória com passo a passo de aplicação.</p>
-            <div class="actions"><a href="<?= app_route('/professor/videos') ?>">Assistir</a></div>
-        </div>
-        <div class="card">
-            <h3>Produto notável: (a+b)^2</h3>
-            <p>Explicação visual para o desenvolvimento do quadrado da soma.</p>
-            <div class="actions"><a href="<?= app_route('/professor/videos') ?>">Assistir</a></div>
-        </div>
-    </div>
+    <?php $navbarActive = 'publicar-videoaula'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+
+    <main class="teacher-video-shell">
+        <header class="teacher-video-header">
+            <p>Publicação de conteúdo</p>
+            <h1>Escolha um <span>conteúdo</span></h1>
+            <span>Cadastre videoaulas para cada tema da plataforma. Assim que publicadas, elas ficam disponíveis para os alunos na área de Videoaulas.</span>
+        </header>
+
+        <?php if ($success !== ''): ?>
+            <p class="teacher-video-notice" role="status"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></p>
+        <?php endif; ?>
+        <?php if ($error !== ''): ?>
+            <p class="teacher-video-notice is-error" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
+        <?php endif; ?>
+
+        <section class="teacher-video-grid" aria-label="Conteúdos disponíveis para publicação">
+            <?php foreach ($areas as $area): ?>
+                <article class="teacher-content-card">
+                    <div class="teacher-content-top">
+                        <span class="teacher-content-icon" aria-hidden="true"><?= htmlspecialchars($area['icone'], ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="teacher-content-level"><?= htmlspecialchars($area['nivel'], ENT_QUOTES, 'UTF-8') ?></span>
+                    </div>
+                    <h2><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></h2>
+                    <p><?= htmlspecialchars($area['descricao'], ENT_QUOTES, 'UTF-8') ?></p>
+                    <div class="teacher-card-footer">
+                        <span class="teacher-video-count"><?= (int) $area['video_count'] ?> <?= (int) $area['video_count'] === 1 ? 'videoaula publicada' : 'videoaulas publicadas' ?></span>
+                        <?php if ($area['modulo_id'] !== null): ?>
+                            <a class="teacher-3d-button" href="<?= app_route('/professor/video/cadastro') ?>&amp;area=<?= urlencode($area['slug']) ?>">Cadastrar videoaula</a>
+                        <?php else: ?>
+                            <span class="teacher-3d-button is-disabled">Indisponível</span>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </section>
+    </main>
 </body>
 </html>

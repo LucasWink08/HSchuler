@@ -314,6 +314,11 @@
       box-shadow: inset 0 1px rgba(255,255,255,.2), 0 2px 0 rgba(23, 39, 118, .95), 0 8px 14px rgba(53, 86, 219, .26);
     }
 
+    .video-back { margin: -4px 0 22px; text-align: center; }
+    .video-back a { color: #abc8ff; font-size: .82rem; font-weight: 700; text-decoration: none; }
+    .video-back a:hover, .video-back a:focus-visible { color: #fff; outline: none; }
+    .video-empty { grid-column: 1 / -1; margin: 0; padding: 30px; border: 1px solid rgba(121, 151, 255, .38); border-radius: 15px; background: rgba(13, 27, 56, .64); color: #bfcee9; text-align: center; }
+
     @media (max-width: 980px) {
       .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -352,92 +357,58 @@
 <body class="video-page">
   <?php $navbarActive = 'videoaulas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 
-  <div class="video-wrap">
-    <div class="video-title">
-      <h1>Videoaulas de Álgebra</h1>
-      <p>Escolha uma área para acessar a lista de aulas disponíveis.</p>
-    </div>
+  <main class="video-wrap">
+    <header class="video-title">
+      <?php if ($areaSelecionada !== null): ?>
+        <h1>Videoaulas: <?= htmlspecialchars($areaSelecionada['titulo'], ENT_QUOTES, 'UTF-8') ?></h1>
+        <p>Assista às aulas publicadas pelos professores para este conteúdo.</p>
+      <?php else: ?>
+        <h1>Videoaulas de Álgebra</h1>
+        <p>Escolha uma área para acessar as aulas publicadas pelos professores.</p>
+      <?php endif; ?>
+    </header>
 
-    <div class="video-grid">
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=potenciacao'">
-        <div class="video-top">
-          <div class="video-badge">x²</div>
-          <div class="video-level">Nível: Básico</div>
-        </div>
-        <div class="video-name">Potenciação</div>
-        <div class="video-desc">Expoentes, regras de potências e simplificação.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/5 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=potenciacao" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=fracoes-algebricas'">
-        <div class="video-top">
-          <div class="video-badge">(a/b)</div>
-          <div class="video-level">Nível: Intermediário</div>
-        </div>
-        <div class="video-name">Frações Algébricas</div>
-        <div class="video-desc">MMC, simplificação e operações com frações.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/6 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=fracoes-algebricas" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=produtos-notaveis'">
-        <div class="video-top">
-          <div class="video-badge">(a±b)</div>
-          <div class="video-level">Nível: Intermediário</div>
-        </div>
-        <div class="video-name">Produtos Notáveis</div>
-        <div class="video-desc">Fórmulas e fatoração para agilizar exercícios.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/4 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=produtos-notaveis" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=fatoracao'">
-        <div class="video-top">
-          <div class="video-badge">(x)</div>
-          <div class="video-level">Nível: Avançado</div>
-        </div>
-        <div class="video-name">Fatoração</div>
-        <div class="video-desc">Trinômios, agrupamento e fator comum.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/4 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=fatoracao" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=equacoes'">
-        <div class="video-top">
-          <div class="video-badge">=</div>
-          <div class="video-level">Nível: Básico</div>
-        </div>
-        <div class="video-name">Equações</div>
-        <div class="video-desc">Noções e exercícios resolvidos passo a passo.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/5 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=equacoes" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-
-      <div class="video-card" onclick="location.href='<?= app_route('/videoaulas') ?>&area=inequacoes'">
-        <div class="video-top">
-          <div class="video-badge">≠</div>
-          <div class="video-level">Nível: Intermediário</div>
-        </div>
-        <div class="video-name">Inequações</div>
-        <div class="video-desc">Resolução e interpretação no conjunto de números.</div>
-        <div class="video-actions">
-          <span class="video-pill">🟦 0/3 aulas</span>
-          <a class="video-link" href="<?= app_route('/videoaulas') ?>&area=inequacoes" onclick="event.stopPropagation();">Assistir</a>
-        </div>
-      </div>
-    </div>
-  </div>
+    <?php if ($areaSelecionada !== null): ?>
+      <p class="video-back"><a href="<?= app_route('/videoaulas') ?>">← Ver todos os conteúdos</a></p>
+      <section class="video-grid" aria-label="Videoaulas de <?= htmlspecialchars($areaSelecionada['titulo'], ENT_QUOTES, 'UTF-8') ?>">
+        <?php if ($videos === []): ?>
+          <p class="video-empty">Ainda não há videoaulas publicadas para este conteúdo.</p>
+        <?php else: ?>
+          <?php foreach ($videos as $video): ?>
+            <article class="video-card">
+              <div class="video-top">
+                <div class="video-badge" aria-hidden="true"><?= htmlspecialchars($areaSelecionada['icone'], ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="video-level">Publicada pelo professor</div>
+              </div>
+              <h2 class="video-name"><?= htmlspecialchars($video['titulo'], ENT_QUOTES, 'UTF-8') ?></h2>
+              <p class="video-desc"><?= htmlspecialchars((string) ($video['descricao'] ?: 'Assista à videoaula e avance nos estudos.'), ENT_QUOTES, 'UTF-8') ?></p>
+              <div class="video-actions">
+                <span class="video-pill">Professor <?= htmlspecialchars($video['professor_nome'], ENT_QUOTES, 'UTF-8') ?></span>
+                <a class="video-link" href="<?= htmlspecialchars($video['url_video'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Assistir</a>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </section>
+    <?php else: ?>
+      <section class="video-grid" aria-label="Conteúdos de videoaulas">
+        <?php foreach ($areas as $area): ?>
+          <article class="video-card">
+            <div class="video-top">
+              <div class="video-badge" aria-hidden="true"><?= htmlspecialchars($area['icone'], ENT_QUOTES, 'UTF-8') ?></div>
+              <div class="video-level">Nível: <?= htmlspecialchars($area['nivel'], ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+            <h2 class="video-name"><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></h2>
+            <p class="video-desc"><?= htmlspecialchars($area['descricao'], ENT_QUOTES, 'UTF-8') ?></p>
+            <div class="video-actions">
+              <span class="video-pill"><?= (int) $area['video_count'] ?> <?= (int) $area['video_count'] === 1 ? 'aula' : 'aulas' ?></span>
+              <a class="video-link" href="<?= app_route('/videoaulas') ?>&amp;area=<?= urlencode($area['slug']) ?>">Ver aulas</a>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      </section>
+    <?php endif; ?>
+  </main>
 </body>
 </html>
 

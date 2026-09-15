@@ -21,12 +21,11 @@ $resumo = [
     'etapas_concluidas' => null,
     'total_etapas' => null,
 ];
-$progressoAreas = [];
+$progressoTrilhas = [];
 
 if ($alunoLogado) {
     $trilhaService = new TrilhaService();
     $resumo = array_merge($resumo, $trilhaService->getResumo($alunoId));
-    $progressoAreas = $trilhaService->getProgressoPorArea($alunoId);
 }
 
 $xp = $resumo['xp'];
@@ -47,12 +46,27 @@ if ($alunoLogado) {
 }
 $areas = [
     ['id' => 'potenciacao', 'titulo' => 'Potenciação', 'icone' => 'a<sup>2</sup>', 'nivel' => 'Iniciante', 'cor' => 'blue'],
-    ['id' => 'fracoes-algebricas', 'titulo' => 'Frações algébricas', 'icone' => '<span>x</span><small>y</small>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
+    ['id' => 'fracoes-algebricas', 'titulo' => 'Frações algébricas', 'icone' => '<span class="fraction-symbol"><span class="fraction-numerator">x</span><i class="fraction-bar"></i><span class="fraction-denominator">y</span></span>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
     ['id' => 'produtos-notaveis', 'titulo' => 'Produtos notáveis', 'icone' => '(a + b)<sup>2</sup>', 'nivel' => 'Intermediário', 'cor' => 'orange'],
     ['id' => 'fatoracao', 'titulo' => 'Fatoração', 'icone' => '(x - a)(x + a)', 'nivel' => 'Avançado', 'cor' => 'pink'],
     ['id' => 'equacoes', 'titulo' => 'Equações', 'icone' => 'x<sup>2</sup> - 4 = 0', 'nivel' => 'Avançado', 'cor' => 'pink'],
     ['id' => 'inequacoes', 'titulo' => 'Inequações', 'icone' => 'x &gt; 0', 'nivel' => 'Especialista', 'cor' => 'purple'],
 ];
+
+if ($alunoLogado) {
+    foreach ($areas as $area) {
+        $resumoArea = $trilhaService->getResumo($alunoId, $area['id']);
+        $concluidasArea = max(0, (int) ($resumoArea['etapas_concluidas'] ?? 0));
+        $totalArea = max(1, (int) ($resumoArea['total_etapas'] ?? 9));
+        $concluidasArea = min($concluidasArea, $totalArea);
+
+        $progressoTrilhas[$area['id']] = [
+            'concluidas' => $concluidasArea,
+            'total' => $totalArea,
+            'percentual' => (int) round(($concluidasArea / $totalArea) * 100),
+        ];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -60,11 +74,11 @@ $areas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=37">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=40">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body class="home-page">
-    <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+    <?php $navbarActive = $professorLogado ? '' : 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
 
     <?php if ($estaLogado): ?>
         <div class="logout-modal" id="logout-modal" role="presentation" hidden>
@@ -96,7 +110,11 @@ $areas = [
 
     <div class="home-floating-art" aria-hidden="true">
         <img class="home-floating-mask" src="<?= $siteRoot ?>/imgs/mask.png" alt="">
-        <?php if (!$estaLogado): ?>
+        <?php if ($estaLogado): ?>
+            <img class="logged-floating-page logged-floating-page-one" src="<?= $siteRoot ?>/imgs/pag3.png" alt="">
+            <img class="logged-floating-page logged-floating-page-two" src="<?= $siteRoot ?>/imgs/pag4.png" alt="">
+            <img class="logged-floating-page logged-floating-page-three" src="<?= $siteRoot ?>/imgs/pag5.png" alt="">
+        <?php else: ?>
             <img class="guest-floating-page guest-floating-page-one" src="<?= $siteRoot ?>/imgs/pag1.png" alt="">
             <img class="guest-floating-page guest-floating-page-two" src="<?= $siteRoot ?>/imgs/pag2.png" alt="">
             <img class="guest-floating-page guest-floating-page-three" src="<?= $siteRoot ?>/imgs/pag3.png" alt="">
@@ -113,11 +131,7 @@ $areas = [
                 <img class="hero-logo" src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
                 <p class="professor-hero-eyebrow">Área do professor</p>
                 <h1 id="hero-title">Seja bem-vindo, <span>professor <?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></span></h1>
-                <p>Organize conteúdos para seus alunos e acompanhe a evolução da turma pela plataforma.</p>
-                <div class="hero-actions">
-                    <a class="hero-button hero-button-primary" href="<?= app_route('/professor/videos') ?>">Cadastrar videoaulas <span aria-hidden="true">&rarr;</span></a>
-                    <a class="hero-button hero-button-secondary" href="<?= app_route('/ranking') ?>"><span aria-hidden="true">&#9733;</span> Visualizar ranking</a>
-                </div>
+                <p>Publique videoaulas para ampliar o acesso dos alunos aos conteúdos, acompanhe o ranking e, em breve, consulte o desempenho da turma por gráficos.</p>
             </section>
         <?php else: ?>
         <section class="home-hero" aria-labelledby="hero-title">
@@ -164,22 +178,7 @@ $areas = [
             </aside>
         <?php endif; ?>
 
-        <?php if ($professorLogado): ?>
-            <section class="professor-home-actions" aria-label="Ações do professor">
-                <a class="professor-home-card" href="<?= app_route('/professor/videos') ?>">
-                    <span class="professor-action-mark" aria-hidden="true">01</span>
-                    <strong>Cadastrar videoaulas</strong>
-                    <p>Prepare aulas e disponibilize os conteúdos para os alunos acessarem.</p>
-                    <span class="professor-action-link">Gerenciar videoaulas <b aria-hidden="true">&rarr;</b></span>
-                </a>
-                <a class="professor-home-card" href="<?= app_route('/ranking') ?>">
-                    <span class="professor-action-mark" aria-hidden="true">02</span>
-                    <strong>Visualizar ranking</strong>
-                    <p>Confira o desempenho dos alunos e acompanhe quem mais evoluiu.</p>
-                    <span class="professor-action-link">Abrir ranking <b aria-hidden="true">&rarr;</b></span>
-                </a>
-            </section>
-        <?php else: ?>
+        <?php if (!$professorLogado): ?>
         <section class="learning-section" id="trilha" aria-labelledby="learning-title">
             <header class="learning-header">
                 <div>
@@ -190,14 +189,17 @@ $areas = [
             </header>
             <div class="learning-cards">
                 <?php foreach ($areas as $area): ?>
-                    <?php $progresso = $progressoAreas[$area['id']] ?? ['concluidas' => 0, 'total' => 0, 'percentual' => 0]; ?>
+                    <?php $progresso = $progressoTrilhas[$area['id']] ?? ['concluidas' => 0, 'total' => 9, 'percentual' => 0]; ?>
                     <a class="learning-card" href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>" data-auth-required aria-label="Abrir trilha de <?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?>">
                         <span class="card-formula <?= $area['cor'] ?>"><?= $area['icone'] ?></span>
                         <strong><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>
                         <span class="card-level"><i class="<?= $area['cor'] ?>"></i><?= $area['nivel'] ?></span>
                         <div class="card-footer">
-                            <div class="card-progress"><span><i style="--progress:<?= $progresso['percentual'] ?>%"></i></span><small><?= $progresso['percentual'] ?>%</small></div>
-                            <span class="card-open" aria-hidden="true">&rarr;</span>
+                            <div class="card-progress">
+                                <span class="card-progress-label"><?= $alunoLogado ? $progresso['concluidas'] . ' de ' . $progresso['total'] . ' etapas concluídas' : $progresso['total'] . ' etapas disponíveis' ?></span>
+                                <span class="card-progress-row"><span><i style="--progress:<?= $progresso['percentual'] ?>%"></i></span><small><?= $progresso['percentual'] ?>%</small></span>
+                            </div>
+                            <span class="card-open" aria-hidden="true"><span>&rarr;</span></span>
                         </div>
                     </a>
                 <?php endforeach; ?>
@@ -209,6 +211,7 @@ $areas = [
         </section>
         <?php endif; ?>
 
+        <?php if (!$professorLogado): ?>
         <section class="about-section" id="sobre" aria-labelledby="about-title">
             <div class="about-intro">
                 <p class="about-eyebrow">Conheça a plataforma</p>
@@ -233,6 +236,7 @@ $areas = [
                 </article>
             </div>
         </section>
+        <?php endif; ?>
     </main>
     <script>
         const dropdown = document.querySelector('.trilha-dropdown');

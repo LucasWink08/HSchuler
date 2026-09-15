@@ -104,14 +104,30 @@ class AuthController
         }
 
         $service = new AuthService();
-        $success = $service->registerProfessor($siape, $nome, $email, $senha);
+        $registrationError = $service->getProfessorRegistrationError($siape, $email);
+
+        if ($registrationError !== null) {
+            header('Location: ' . app_route('/cadastro/professor') . '&error=' . rawurlencode($registrationError));
+            exit;
+        }
+
+        try {
+            $success = $service->registerProfessor($siape, $nome, $email, $senha);
+        } catch (PDOException $exception) {
+            $message = $exception->getCode() === '23000'
+                ? 'Este SIAPE ou e-mail já está cadastrado.'
+                : 'Não foi possível criar a conta. Tente novamente.';
+
+            header('Location: ' . app_route('/cadastro/professor') . '&error=' . rawurlencode($message));
+            exit;
+        }
 
         if ($success) {
             header('Location: ' . APP_URL . '/index.php?route=/login&success=Professor+cadastrado');
             exit;
         }
 
-        header('Location: ' . APP_URL . '/index.php?route=/cadastro/professor&error=Dados+inválidos');
+        header('Location: ' . app_route('/cadastro/professor') . '&error=' . rawurlencode('Não foi possível criar a conta. Tente novamente.'));
         exit;
     }
 
