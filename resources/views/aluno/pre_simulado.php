@@ -7,40 +7,32 @@
     <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>">
     <style>
         body.pre-simulado {
-            display: grid;
+            display: flex;
+            flex-direction: column;
             min-height: 100svh;
-            place-items: center;
-            padding: 92px 16px 32px;
-            overflow-y: auto;
+            margin: 0;
+            overflow-x: hidden;
             color: #fff;
         }
 
-        body.pre-simulado .prep-nav {
-            position: fixed;
-            inset: 0 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        body.pre-simulado .site-nav {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .pre-simulado-content {
+            display: grid;
             width: 100%;
-            min-height: 64px;
-            padding: 14px 40px;
-            background: transparent;
-            z-index: 10;
+            flex: 1 1 auto;
+            place-items: center;
+            padding: 30px 24px 64px;
         }
-
-        .prep-nav a {
-            color: rgba(255, 255, 255, .84);
-            text-decoration: none;
-            transition: color .2s ease;
-        }
-
-        .prep-nav a:hover { color: #b479ff; }
 
         .prep-card {
             width: min(100%, 570px);
             padding: clamp(28px, 6vw, 48px);
             border: 1px solid rgba(255, 255, 255, .2);
-            border-radius: 18px;
+            border-radius: 12px;
             background: linear-gradient(145deg, rgba(20, 10, 49, .92), rgba(5, 5, 12, .94));
             box-shadow: 0 22px 60px rgba(0, 0, 0, .42), 0 0 40px rgba(87, 24, 204, .16);
             text-align: center;
@@ -91,27 +83,26 @@
         .start-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #260654, 0 5px 12px rgba(39, 7, 94, .35); }
 
         @media (max-width: 560px) {
-            body.pre-simulado .prep-nav { padding: 14px 20px; }
-            body.pre-simulado { padding: 86px 16px 24px; }
+            .pre-simulado-content { padding: 22px 16px 38px; }
+            .prep-card { padding: 28px 22px; }
         }
     </style>
 </head>
 <body class="pre-simulado">
     <?php $navbarActive = 'simulados'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
-    <nav class="prep-nav" aria-label="Navega&ccedil;&atilde;o do simulado" hidden>
-        <a href="<?= app_route('/') ?>">&larr; Voltar para a home</a>
-        <a href="<?= app_route('/ranking') ?>">Ranking</a>
-    </nav>
 
-    <main class="prep-card">
-        <div class="prep-icon" aria-hidden="true">?</div>
-        <h1>Voc&ecirc; est&aacute; preparado?</h1>
-        <p>Voc&ecirc; vai come&ccedil;ar um simulado de 20 quest&otilde;es.</p>
+    <main class="pre-simulado-content">
+        <section class="prep-card" aria-labelledby="prep-title">
+            <div class="prep-icon" aria-hidden="true">?</div>
+            <h1 id="prep-title">Voc&ecirc; est&aacute; preparado?</h1>
+            <p>Voc&ecirc; vai come&ccedil;ar um simulado de 20 quest&otilde;es.</p>
 
-        <form method="get" action="<?= app_route('/aluno/simulados') ?>">
-            <input type="hidden" name="iniciar" value="1">
-            <button class="start-button" type="submit">Come&ccedil;ar simulado</button>
-        </form>
+            <form method="get" action="<?= APP_URL ?>/index.php">
+                <input type="hidden" name="route" value="/aluno/simulados">
+                <input type="hidden" name="iniciar" value="1">
+                <button class="start-button" type="submit">Come&ccedil;ar simulado</button>
+            </form>
+        </section>
     </main>
 </body>
 </html>

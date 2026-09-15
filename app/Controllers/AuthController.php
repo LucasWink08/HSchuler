@@ -79,7 +79,16 @@ class AuthController
         }
 
         $service = new AuthService();
-        $success = $service->registerAluno($usuario, $email, $dataNascimento, $senha);
+        try {
+            $success = $service->registerAluno($usuario, $email, $dataNascimento, $senha);
+        } catch (PDOException $exception) {
+            $message = $exception->getCode() === '23000'
+                ? 'E-mail ou usuário já está cadastrado.'
+                : 'Não foi possível criar a conta. Tente novamente.';
+
+            header('Location: ' . APP_URL . '/index.php?route=/cadastro/aluno&error=' . rawurlencode($message));
+            exit;
+        }
 
         if ($success) {
             header('Location: ' . APP_URL . '/index.php?route=/login&success=Cadastro+realizado');

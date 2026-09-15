@@ -41,7 +41,7 @@ class AuthService
 
     public function registerAluno(string $usuario, string $email, string $dataNascimento, string $senha): bool
     {
-        if ($this->repository->findByEmail($email)) {
+        if ($this->repository->findByUsuario($usuario) || $this->repository->findByEmail($email)) {
             return false;
         }
 
