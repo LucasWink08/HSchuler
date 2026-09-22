@@ -2,6 +2,8 @@
 
 class TrilhaService
 {
+    private const XP_POR_ACERTO = 5;
+
     public function getResumo(?int $alunoId, ?string $area = null): array
     {
         $resumo = [
@@ -179,7 +181,10 @@ class TrilhaService
                 $estadoSalvo = $etapa['estado_aluno'] !== null
                     ? $this->normalizarEstado((string) $etapa['estado_aluno'])
                     : null;
-                $estado = $estadoSalvo === 'complete'
+                // Uma conclusão registrada só aparece como concluída quando todos os
+                // pré-requisitos também estão concluídos. Isso mantém a sequência
+                // coerente quando uma trilha recebe novas etapas intermediárias.
+                $estado = $anteriorConcluida && $estadoSalvo === 'complete'
                     ? 'complete'
                     : ($anteriorConcluida ? ((int) $etapa['ordem_num'] % 5 === 0 ? 'checkpoint' : 'current') : 'locked');
                 $estados[$this->normalizarIdentificador((string) $etapa['nome'])] = $estado;
@@ -214,11 +219,28 @@ class TrilhaService
             }
 
             $acertos = 0;
+            $resultadosQuestoes = [];
             foreach ($questoes as $indice => $questao) {
                 $resposta = isset($respostas[$indice]) ? (string) $respostas[$indice] : '';
-                if ($resposta !== '' && (int) $resposta === (int) $questao['correta']) {
+                $indiceCorreto = (int) $questao['correta'];
+                $indiceEscolhido = (int) $resposta;
+                $acertou = $resposta !== '' && $indiceEscolhido === $indiceCorreto;
+
+                if ($acertou) {
                     $acertos++;
                 }
+
+                $alternativas = $questao['alternativas'] ?? [];
+                $resultadosQuestoes[] = [
+                    'numero' => $indice + 1,
+                    'enunciado' => (string) ($questao['enunciado'] ?? ''),
+                    'acertou' => $acertou,
+                    'indice_escolhido' => $indiceEscolhido,
+                    'resposta_escolhida' => (string) ($alternativas[$indiceEscolhido] ?? ''),
+                    'indice_correto' => $indiceCorreto,
+                    'resposta_correta' => (string) ($alternativas[$indiceCorreto] ?? ''),
+                    'explicacao' => (string) ($questao['explicacao'] ?? ''),
+                ];
             }
 
             $stmtTentativa = $db->prepare(
@@ -249,20 +271,24 @@ class TrilhaService
                 $stmt->execute([':id' => $progresso['id']]);
             }
 
+            $xpRecebido = $primeiraConclusao ? $acertos * self::XP_POR_ACERTO : 0;
+
             $stmtTentativa->execute([
                 ':aluno_id' => $alunoId, ':etapa_id' => $etapaId,
                 ':acertos' => $acertos, ':erros' => 5 - $acertos,
-                ':xp_recebido' => $primeiraConclusao ? 10 : 0,
+                ':xp_recebido' => $xpRecebido,
             ]);
 
-            if ($primeiraConclusao) {
+            if ($xpRecebido > 0) {
                 $stmt = $db->prepare(
                     "INSERT INTO xp_transacao (aluno_id, tipo, quantidade, descricao)
-                     VALUES (:aluno_id, 'etapa_concluida', 10, :descricao)"
+                     VALUES (:aluno_id, 'questoes_acertadas', :quantidade, :descricao)"
                 );
                 $stmt->execute([
                     ':aluno_id' => $alunoId,
-                    ':descricao' => 'ConclusÃ£o da etapa ' . $etapaId,
+                    ':quantidade' => $xpRecebido,
+                    ':descricao' => $acertos . ' acerto(s) na etapa ' . $etapaId
+                        . ' (' . self::XP_POR_ACERTO . ' XP por acerto).',
                 ]);
             }
 
@@ -275,8 +301,10 @@ class TrilhaService
             return [
                 'acertos' => $acertos,
                 'erros' => 5 - $acertos,
-                'xp_recebido' => $primeiraConclusao ? 10 : 0,
+                'xp_recebido' => $xpRecebido,
+                'xp_por_acerto' => self::XP_POR_ACERTO,
                 'primeira_conclusao' => $primeiraConclusao,
+                'questoes' => $resultadosQuestoes,
                 'resumo' => $this->getResumo($alunoId),
             ];
         } catch (PDOException $exception) {
@@ -823,16 +851,63 @@ class TrilhaService
         $area = $this->normalizarIdentificador($area) ?: 'potenciacao';
         $stmt = $db->query('SELECT id, nome FROM modulo ORDER BY id');
         foreach ($stmt->fetchAll() as $modulo) {
-            if ($this->normalizarIdentificador((string) $modulo['nome']) === $area) return $modulo;
+            if ($this->normalizarIdentificador((string) $modulo['nome']) === $area) {
+                $this->sincronizarEtapasDaArea($db, (int) $modulo['id'], $area);
+                return $modulo;
+            }
         }
         $titulos = ['potenciacao' => 'Potenciação', 'fracoes-algebricas' => 'Frações algébricas', 'produtos-notaveis' => 'Produtos notáveis', 'fatoracao' => 'Fatoração', 'equacoes' => 'Equações', 'inequacoes' => 'Inequações'];
         $insert = $db->prepare('INSERT INTO modulo (nome, ordem_num) VALUES (:nome, 1)');
         $insert->execute([':nome' => $titulos[$area] ?? ucfirst(str_replace('-', ' ', $area))]);
         $id = (int) $db->lastInsertId();
-        $etapas = $this->nomesEtapasDaArea($area);
-        $stmtEtapa = $db->prepare('INSERT INTO etapa_trilha (modulo_id, nome, descricao, ordem_num, estado) VALUES (:modulo_id, :nome, :descricao, :ordem, :estado)');
-        foreach ($etapas as $indice => $nome) $stmtEtapa->execute([':modulo_id' => $id, ':nome' => $nome, ':descricao' => 'Etapa de aprendizagem: ' . $nome, ':ordem' => $indice + 1, ':estado' => ($indice + 1) % 5 === 0 ? 'checkpoint' : 'bloqueada']);
+        $this->sincronizarEtapasDaArea($db, $id, $area);
         return ['id' => $id, 'nome' => $titulos[$area] ?? $area];
+    }
+
+    /** Mantém as etapas já criadas e inclui os novos níveis sem perder progresso. */
+    private function sincronizarEtapasDaArea(PDO $db, int $moduloId, string $area): void
+    {
+        $etapasPlanejadas = $this->nomesEtapasDaArea($area);
+        $stmt = $db->prepare('SELECT id, nome, ordem_num FROM etapa_trilha WHERE modulo_id = :modulo_id');
+        $stmt->execute([':modulo_id' => $moduloId]);
+
+        $existentes = [];
+        foreach ($stmt->fetchAll() as $etapa) {
+            $existentes[$this->normalizarIdentificador((string) $etapa['nome'])] = [
+                'id' => (int) $etapa['id'],
+                'ordem' => (int) $etapa['ordem_num'],
+            ];
+        }
+
+        $inserir = $db->prepare(
+            'INSERT INTO etapa_trilha (modulo_id, nome, descricao, ordem_num, estado)
+             VALUES (:modulo_id, :nome, :descricao, :ordem, :estado)'
+        );
+        $atualizar = $db->prepare(
+            'UPDATE etapa_trilha
+             SET ordem_num = :ordem
+             WHERE id = :id'
+        );
+
+        foreach ($etapasPlanejadas as $indice => $nome) {
+            $ordem = $indice + 1;
+            $dados = [
+                ':nome' => $nome,
+                ':descricao' => 'Etapa de aprendizagem: ' . $nome,
+                ':ordem' => $ordem,
+                ':estado' => $ordem % 5 === 0 ? 'checkpoint' : 'bloqueada',
+            ];
+            $chave = $this->normalizarIdentificador($nome);
+
+            if (isset($existentes[$chave])) {
+                if ($existentes[$chave]['ordem'] !== $ordem) {
+                    $atualizar->execute([':ordem' => $ordem, ':id' => $existentes[$chave]['id']]);
+                }
+                continue;
+            }
+
+            $inserir->execute($dados + [':modulo_id' => $moduloId]);
+        }
     }
 
     private function etapaLiberada(PDO $db, int $alunoId, int $moduloId, int $ordem): bool
@@ -847,15 +922,15 @@ class TrilhaService
     private function nomesEtapasDaArea(string $area): array
     {
         $etapas = [
-            'potenciacao' => ['Introdução', 'Base e expoente', 'Potências de base 10', 'Exercícios de potenciação', 'Revisão', 'Produto de potências', 'Quociente de potências', 'Expoentes negativos', 'Desafio final'],
-            'fracoes-algebricas' => ['Termos algébricos', 'Domínio', 'Fator comum', 'Exercícios com frações', 'Revisão', 'Multiplicação', 'Soma e subtração', 'Frações complexas', 'Desafio final'],
-            'fatoracao' => ['Fator comum', 'Agrupamento', 'Diferença de quadrados', 'Exercícios de fatoração', 'Revisão', 'Trinômios', 'Soma de cubos', 'Prática', 'Desafio final'],
-            'equacoes' => ['Princípio da igualdade', 'Termos semelhantes', 'Isolando a incógnita', 'Exercícios de equações', 'Revisão', 'Parênteses', 'Problemas', '2º grau', 'Desafio final'],
-            'inequacoes' => ['Símbolos de comparação', 'Conjunto solução', 'Reta numérica', 'Exercícios de inequações', 'Revisão', 'Intervalos', 'Sistemas', 'Prática', 'Desafio final'],
-            'produtos-notaveis' => ['Padrões algébricos', 'Quadrado da soma', 'Quadrado da diferença', 'Exercícios de produtos notáveis', 'Revisão', 'Soma pela diferença', 'Aplicações', 'Fórmulas', 'Desafio final'],
+            'potenciacao' => ['Introdução', 'Base e expoente', 'Potências de base 10', 'Expoente zero e um', 'Exercícios de potenciação', 'Revisão', 'Produto de potências', 'Quociente de potências', 'Potência de uma potência', 'Expoentes negativos', 'Notação científica', 'Propriedades combinadas', 'Desafio final'],
+            'fracoes-algebricas' => ['Termos algébricos', 'Domínio', 'Fator comum', 'Exercícios com frações', 'Revisão', 'Multiplicação', 'Soma e subtração', 'Denominador comum', 'Frações complexas', 'Equações fracionárias', 'Simplificação avançada', 'Aplicações', 'Desafio final'],
+            'fatoracao' => ['Fator comum', 'Agrupamento', 'Diferença de quadrados', 'Exercícios de fatoração', 'Revisão', 'Trinômios', 'Soma de cubos', 'Prática', 'Trinômio quadrado perfeito', 'Fatoração completa', 'Substituição', 'Aplicações e raízes', 'Desafio final'],
+            'equacoes' => ['Princípio da igualdade', 'Termos semelhantes', 'Isolando a incógnita', 'Exercícios de equações', 'Revisão', 'Parênteses', 'Equações fracionárias', 'Proporções', 'Problemas', '2º grau', 'Fórmula de Bhaskara', 'Sistemas lineares', 'Desafio final'],
+            'inequacoes' => ['Símbolos de comparação', 'Conjunto solução', 'Reta numérica', 'Exercícios de inequações', 'Revisão', 'Coeficientes negativos', 'Inequações compostas', 'Intervalos', 'Sistemas', 'Inequações fracionárias', 'Módulo', 'Prática', 'Desafio final'],
+            'produtos-notaveis' => ['Padrões algébricos', 'Quadrado da soma', 'Quadrado da diferença', 'Exercícios de produtos notáveis', 'Revisão', 'Soma pela diferença', 'Aplicações', 'Fórmulas', 'Fatoração de quadrados perfeitos', 'Binômios com coeficientes', 'Expressões combinadas', 'Cálculo inteligente', 'Desafio final'],
         ];
 
-        return $etapas[$area] ?? ['Introdução', 'Conceitos fundamentais', 'Prática guiada', 'Exercícios', 'Revisão', 'Aplicações', 'Aprofundamento', 'Prática final', 'Desafio final'];
+        return $etapas[$area] ?? ['Introdução', 'Conceitos fundamentais', 'Prática guiada', 'Exercícios', 'Revisão', 'Aplicações iniciais', 'Aprofundamento', 'Prática intermediária', 'Consolidação', 'Aplicações avançadas', 'Estratégias de resolução', 'Prática final', 'Desafio final'];
     }
 }
 

@@ -11,11 +11,22 @@ class UserRepository
 
     public function findByUsuario(string $usuario): ?array
     {
-        $sql = 'SELECT id, usuario, senha FROM aluno WHERE usuario = :usuario LIMIT 1';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':usuario' => $usuario]);
+        try {
+            $stmt = $this->db->prepare(
+                'SELECT id, usuario, senha, foto_perfil FROM aluno WHERE usuario = :usuario LIMIT 1'
+            );
+            $stmt->execute([':usuario' => $usuario]);
+            $user = $stmt->fetch();
+        } catch (PDOException $exception) {
+            // Mantém o login disponível até que a migração da foto seja aplicada.
+            $stmt = $this->db->prepare('SELECT id, usuario, senha FROM aluno WHERE usuario = :usuario LIMIT 1');
+            $stmt->execute([':usuario' => $usuario]);
+            $user = $stmt->fetch();
+            if ($user !== false) {
+                $user['foto_perfil'] = null;
+            }
+        }
 
-        $user = $stmt->fetch();
         return $user ?: null;
     }
 

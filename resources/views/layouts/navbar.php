@@ -3,12 +3,21 @@ $navbarActive = $navbarActive ?? '';
 $navbarRole = $_SESSION['role'] ?? null;
 $navbarName = trim((string) ($_SESSION['usuario'] ?? ''));
 $navbarLoggedIn = in_array($navbarRole, ['aluno', 'professor'], true) && $navbarName !== '';
+$navbarPhoto = '';
+$navbarInitial = '';
 
 if ($navbarLoggedIn) {
     $navbarProfileRoute = $navbarRole === 'professor' ? '/professor/dashboard' : '/aluno/dashboard';
     $navbarName = function_exists('mb_convert_case')
         ? mb_convert_case($navbarName, MB_CASE_TITLE, 'UTF-8')
         : ucwords($navbarName);
+    $navbarInitial = function_exists('mb_substr')
+        ? mb_strtoupper(mb_substr($navbarName, 0, 1, 'UTF-8'), 'UTF-8')
+        : strtoupper(substr($navbarName, 0, 1));
+    if ($navbarRole === 'aluno') {
+        $foto = basename(trim((string) ($_SESSION['foto_perfil'] ?? '')));
+        $navbarPhoto = $foto === '' ? '' : APP_URL . '/uploads/perfis/' . rawurlencode($foto);
+    }
 }
 
 $navbarLinks = $navbarRole === 'professor'
@@ -26,7 +35,7 @@ $navbarLinks = $navbarRole === 'professor'
         'sobre' => ['label' => 'Sobre', 'route' => '/sobre'],
     ];
 ?>
-<link rel="stylesheet" href="<?= app_asset('css/site_nav.css') ?>?v=2">
+<link rel="stylesheet" href="<?= app_asset('css/site_nav.css') ?>?v=3">
 <nav class="site-nav" aria-label="Navegação principal">
     <a class="site-nav-brand" href="<?= app_route('/') ?>" aria-label="Página inicial">
         <img src="<?= app_asset('images/home/logo.png') ?>" alt="HSchuler">
@@ -45,7 +54,9 @@ $navbarLinks = $navbarRole === 'professor'
     <div class="site-nav-actions">
         <?php if ($navbarLoggedIn): ?>
             <a class="site-nav-profile" href="<?= app_route($navbarProfileRoute) ?>">
-                <span class="site-nav-status" aria-hidden="true"></span>
+                <span class="site-nav-avatar" aria-hidden="true">
+                    <?php if ($navbarPhoto !== ''): ?><img src="<?= htmlspecialchars($navbarPhoto, ENT_QUOTES, 'UTF-8') ?>" alt=""><?php else: ?><?= htmlspecialchars($navbarInitial, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+                </span>
                 <span><?= htmlspecialchars($navbarName, ENT_QUOTES, 'UTF-8') ?></span>
             </a>
             <a class="site-nav-cta" href="<?= app_route('/auth/logout') ?>">Sair</a>

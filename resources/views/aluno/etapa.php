@@ -4,6 +4,8 @@ $areaLabel = $areaLabel ?? (new QuestaoService())->getAreaLabel($area);
 $etapa = $etapa ?? [];
 $questoes = $questoes ?? [];
 $resumo = $resumo ?? [];
+$resultado = $resultado ?? null;
+$resultadosQuestoes = is_array($resultado['questoes'] ?? null) ? $resultado['questoes'] : [];
 $total = count($questoes);
 $etapasConcluidas = (int) ($resumo['etapas_concluidas'] ?? 0);
 $totalEtapas = (int) ($resumo['total_etapas'] ?? 0);
@@ -93,6 +95,21 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
         .stage-result-values { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin: 26px 0; }
         .stage-result-values strong { display: block; font-size: 1.65rem; }
         .stage-result-values .is-xp { color: #ffcf55; }
+        .stage-result-details { display: grid; gap: 13px; margin: 30px 0; text-align: left; }
+        .stage-result-details h3 { margin: 0 0 2px; font-size: 1.1rem; }
+        .stage-result-question { padding: 16px; border: 1px solid rgba(141, 165, 207, .28); border-left: 5px solid #7f8ca2; border-radius: 12px; background: rgba(12, 20, 34, .7); }
+        .stage-result-question.is-correct { border-left-color: #39d878; background: rgba(34, 151, 75, .12); }
+        .stage-result-question.is-error { border-left-color: #ff6d79; background: rgba(178, 49, 65, .13); }
+        .stage-result-question-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .stage-result-question-header strong { font-size: .92rem; }
+        .stage-result-status { padding: 5px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+        .is-correct .stage-result-status { background: rgba(57, 216, 120, .2); color: #9af5bb; }
+        .is-error .stage-result-status { background: rgba(255, 109, 121, .2); color: #ffb4bb; }
+        .stage-result-enunciado { margin: 12px 0 10px !important; color: #f4f7ff !important; font-size: .93rem; }
+        .stage-result-answer { display: grid; grid-template-columns: minmax(112px, auto) 1fr; gap: 8px 12px; margin: 7px 0; color: #c0cbe0; font-size: .84rem; line-height: 1.4; }
+        .stage-result-answer b { color: #e3eafd; }
+        .stage-result-answer.is-right b { color: #aaf4c5; }
+        .stage-result-explanation { margin: 12px 0 0 !important; color: #b8c7de !important; font-size: .8rem; }
         .stage-notice { margin: 0 30px 28px; padding: 13px; border: 1px solid #ef7171; border-radius: 10px; background: rgba(201, 54, 54, .13); color: #ffd0d0; }
         .stage-side { padding: 20px; }
         .stage-side-row { display: flex; justify-content: space-between; gap: 10px; margin: 17px 0; color: #c0cbe0; font-size: .86rem; }
@@ -146,7 +163,39 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
                         <span><strong><?= (int) $resultado['erros'] ?></strong>erros</span>
                         <span class="is-xp"><strong>+<?= (int) $resultado['xp_recebido'] ?></strong>XP recebido</span>
                     </div>
-                    <p><?= $resultado['primeira_conclusao'] ? 'A próxima etapa foi liberada e seu progresso foi atualizado.' : 'Resultado registrado. Esta etapa já concedeu a recompensa.' ?></p>
+                    <p><?= $resultado['primeira_conclusao'] ? 'Cada acerto vale 5 XP. A próxima etapa foi liberada e seu progresso foi atualizado.' : 'Resultado registrado. Esta etapa já concedeu a recompensa na primeira conclusão.' ?></p>
+                    <?php if ($resultadosQuestoes !== []): ?>
+                        <section class="stage-result-details" aria-label="Resultado por questão">
+                            <h3>Confira suas respostas</h3>
+                            <?php foreach ($resultadosQuestoes as $resultadoQuestao): ?>
+                                <?php
+                                $acertou = (bool) ($resultadoQuestao['acertou'] ?? false);
+                                $indiceEscolhido = (int) ($resultadoQuestao['indice_escolhido'] ?? 0);
+                                $indiceCorreto = (int) ($resultadoQuestao['indice_correto'] ?? 0);
+                                ?>
+                                <article class="stage-result-question <?= $acertou ? 'is-correct' : 'is-error' ?>">
+                                    <header class="stage-result-question-header">
+                                        <strong>Questão <?= (int) ($resultadoQuestao['numero'] ?? 0) ?></strong>
+                                        <span class="stage-result-status"><?= $acertou ? 'Acertou' : 'Errou' ?></span>
+                                    </header>
+                                    <p class="stage-result-enunciado"><?= htmlspecialchars((string) ($resultadoQuestao['enunciado'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                                    <div class="stage-result-answer">
+                                        <b>Sua resposta</b>
+                                        <span><?= chr(65 + $indiceEscolhido) ?>. <?= htmlspecialchars((string) ($resultadoQuestao['resposta_escolhida'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    </div>
+                                    <?php if (!$acertou): ?>
+                                        <div class="stage-result-answer is-right">
+                                            <b>Resposta correta</b>
+                                            <span><?= chr(65 + $indiceCorreto) ?>. <?= htmlspecialchars((string) ($resultadoQuestao['resposta_correta'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (($resultadoQuestao['explicacao'] ?? '') !== ''): ?>
+                                        <p class="stage-result-explanation"><?= htmlspecialchars((string) $resultadoQuestao['explicacao'], ENT_QUOTES, 'UTF-8') ?></p>
+                                    <?php endif; ?>
+                                </article>
+                            <?php endforeach; ?>
+                        </section>
+                    <?php endif; ?>
                     <a class="stage-button stage-button-primary" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>">Ver trilha atualizada</a>
                 </div>
             <?php elseif ($total === 0): ?>
@@ -171,7 +220,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
                         <a class="stage-button" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($area) ?>" id="stage-back">← Voltar</a>
                         <button class="stage-button" type="button" id="stage-prev" hidden>← Anterior</button>
                         <button class="stage-button stage-button-primary" type="button" id="stage-next">Próxima questão</button>
-                        <button class="stage-button stage-button-primary" type="submit" id="stage-finish" hidden>Finalizar etapa +10 XP</button>
+                        <button class="stage-button stage-button-primary" type="submit" id="stage-finish" hidden>Finalizar etapa · até 25 XP</button>
                     </div>
                 </form>
             <?php endif; ?>
@@ -179,7 +228,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
 
         <aside class="stage-card stage-side" aria-label="Progresso da atividade">
             <h2>Seu progresso</h2>
-            <div class="stage-side-row"><span id="stage-side-count">Questão 1 de <?= $total ?></span><b>+10 XP ao concluir</b></div>
+            <div class="stage-side-row"><span id="stage-side-count">Questão 1 de <?= $total ?></span><b>5 XP por acerto</b></div>
             <div class="stage-progress"><i id="stage-side-progress" style="--progress:<?= $progressoInicial ?>%"></i></div>
             <p class="stage-streak">🔥 Sequência de <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</p>
         </aside>

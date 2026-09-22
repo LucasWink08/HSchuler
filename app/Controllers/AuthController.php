@@ -27,6 +27,7 @@ class AuthController
 
         $_SESSION['usuario'] = $user['usuario'];
         $_SESSION['user_id'] = $user['id'];
+        $_SESSION['foto_perfil'] = $user['foto_perfil'] ?? null;
         $_SESSION['role'] = $user['role'];
 
         header('Location: ' . app_route('/'));

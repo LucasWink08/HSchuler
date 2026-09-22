@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS aluno (
     email VARCHAR(150) NOT NULL UNIQUE,
     data_nasc DATE NULL,
     senha VARCHAR(255) NOT NULL,
+    foto_perfil VARCHAR(255) NULL,
     xp_total INT NOT NULL DEFAULT 0,
     nivel INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

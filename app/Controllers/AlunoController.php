@@ -4,6 +4,7 @@ class AlunoController
 {
     private QuestaoService $questaoService;
     private TrilhaService $trilhaService;
+    private static bool $estruturaFotoPerfilVerificada = false;
 
     public function __construct()
     {
@@ -14,7 +15,32 @@ class AlunoController
     public function dashboard(): void
     {
         $this->requireAluno();
-        $resumo = $this->trilhaService->getResumo($this->getAlunoId());
+        $alunoId = $this->getAlunoId();
+        if ($alunoId !== null) {
+            $this->garantirCampoFotoPerfil();
+        }
+        if (empty($_SESSION['foto_perfil_token'])) {
+            $_SESSION['foto_perfil_token'] = bin2hex(random_bytes(24));
+        }
+        $fotoToken = (string) $_SESSION['foto_perfil_token'];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $alunoId !== null) {
+            $tokenEnviado = (string) ($_POST['foto_perfil_token'] ?? '');
+            $resultadoFoto = hash_equals($fotoToken, $tokenEnviado)
+                ? $this->salvarFotoPerfil($alunoId, $_FILES['foto_perfil'] ?? null)
+                : ['sucesso' => false, 'mensagem' => 'A solicitação expirou. Atualize a página e tente novamente.'];
+            $url = app_route('/aluno/dashboard')
+                . '&foto_status=' . ($resultadoFoto['sucesso'] ? 'ok' : 'erro')
+                . '&foto_mensagem=' . rawurlencode($resultadoFoto['mensagem']);
+            header('Location: ' . $url);
+            exit;
+        }
+
+        $perfil = $alunoId === null ? null : $this->buscarPerfil($alunoId);
+        $_SESSION['foto_perfil'] = $perfil['foto_perfil'] ?? null;
+        $resumo = $this->trilhaService->getResumo($alunoId);
+        $fotoMensagem = trim((string) ($_GET['foto_mensagem'] ?? ''));
+        $fotoStatus = ($_GET['foto_status'] ?? '') === 'ok' ? 'ok' : ($fotoMensagem !== '' ? 'erro' : '');
         require APP_ROOT . '/resources/views/aluno/dashboard.php';
     }
 
@@ -173,6 +199,133 @@ class AlunoController
     {
         $this->requireAluno();
         require APP_ROOT . '/resources/views/aluno/ranking.php';
+    }
+
+    private function buscarPerfil(int $alunoId): ?array
+    {
+        try {
+            $stmt = Database::getConnection()->prepare(
+                'SELECT usuario, email, foto_perfil FROM aluno WHERE id = :id LIMIT 1'
+            );
+            $stmt->execute([':id' => $alunoId]);
+            $perfil = $stmt->fetch();
+
+            return $perfil ?: null;
+        } catch (PDOException $exception) {
+            try {
+                $stmt = Database::getConnection()->prepare(
+                    'SELECT usuario, email FROM aluno WHERE id = :id LIMIT 1'
+                );
+                $stmt->execute([':id' => $alunoId]);
+                $perfil = $stmt->fetch();
+                if ($perfil !== false) {
+                    $perfil['foto_perfil'] = null;
+                }
+
+                return $perfil ?: null;
+            } catch (PDOException $fallbackException) {
+                return null;
+            }
+        }
+    }
+
+    /** Aplica a alteração de estrutura uma única vez para bancos já existentes. */
+    private function garantirCampoFotoPerfil(): bool
+    {
+        if (self::$estruturaFotoPerfilVerificada) {
+            return true;
+        }
+
+        try {
+            $db = Database::getConnection();
+            $colunaExiste = $db->query("SHOW COLUMNS FROM aluno LIKE 'foto_perfil'")->fetch() !== false;
+
+            if (!$colunaExiste) {
+                $db->exec('ALTER TABLE aluno ADD COLUMN foto_perfil VARCHAR(255) NULL AFTER senha');
+                $colunaExiste = $db->query("SHOW COLUMNS FROM aluno LIKE 'foto_perfil'")->fetch() !== false;
+            }
+
+            if (!$colunaExiste) {
+                return false;
+            }
+
+            self::$estruturaFotoPerfilVerificada = true;
+
+            return true;
+        } catch (PDOException $exception) {
+            return false;
+        }
+    }
+
+    /** @param array<string, mixed>|null $arquivo */
+    private function salvarFotoPerfil(int $alunoId, ?array $arquivo): array
+    {
+        if ($arquivo === null || ($arquivo['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return ['sucesso' => false, 'mensagem' => 'Selecione uma imagem para enviar.'];
+        }
+
+        if (($arquivo['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            return ['sucesso' => false, 'mensagem' => 'Não foi possível enviar a imagem. Tente novamente.'];
+        }
+
+        $tamanho = (int) ($arquivo['size'] ?? 0);
+        $temporario = (string) ($arquivo['tmp_name'] ?? '');
+        if ($tamanho <= 0 || $tamanho > 3 * 1024 * 1024 || !is_uploaded_file($temporario)) {
+            return ['sucesso' => false, 'mensagem' => 'Use uma imagem válida de até 3 MB.'];
+        }
+
+        $imagem = @getimagesize($temporario);
+        $tiposAceitos = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+        $mime = is_array($imagem) ? (string) ($imagem['mime'] ?? '') : '';
+        $largura = is_array($imagem) ? (int) ($imagem[0] ?? 0) : 0;
+        $altura = is_array($imagem) ? (int) ($imagem[1] ?? 0) : 0;
+        if (!isset($tiposAceitos[$mime]) || $largura < 32 || $altura < 32 || $largura > 6000 || $altura > 6000) {
+            return ['sucesso' => false, 'mensagem' => 'Envie uma imagem JPG, PNG ou WEBP entre 32 px e 6000 px.'];
+        }
+
+        $diretorio = APP_ROOT . '/public/uploads/perfis';
+        if (!is_dir($diretorio) && !mkdir($diretorio, 0755, true) && !is_dir($diretorio)) {
+            return ['sucesso' => false, 'mensagem' => 'Não foi possível preparar o armazenamento da foto.'];
+        }
+
+        try {
+            $nomeArquivo = bin2hex(random_bytes(16)) . '.' . $tiposAceitos[$mime];
+        } catch (Throwable $exception) {
+            return ['sucesso' => false, 'mensagem' => 'Não foi possível preparar a foto. Tente novamente.'];
+        }
+
+        $destino = $diretorio . DIRECTORY_SEPARATOR . $nomeArquivo;
+        if (!move_uploaded_file($temporario, $destino)) {
+            return ['sucesso' => false, 'mensagem' => 'Não foi possível salvar a foto enviada.'];
+        }
+
+        try {
+            $db = Database::getConnection();
+            $stmtAnterior = $db->prepare('SELECT foto_perfil FROM aluno WHERE id = :id LIMIT 1');
+            $stmtAnterior->execute([':id' => $alunoId]);
+            $fotoAnterior = (string) ($stmtAnterior->fetchColumn() ?: '');
+
+            $stmt = $db->prepare('UPDATE aluno SET foto_perfil = :foto_perfil WHERE id = :id');
+            $stmt->execute([':foto_perfil' => $nomeArquivo, ':id' => $alunoId]);
+            $_SESSION['foto_perfil'] = $nomeArquivo;
+
+            $arquivoAnterior = $diretorio . DIRECTORY_SEPARATOR . basename($fotoAnterior);
+            if ($fotoAnterior !== '' && is_file($arquivoAnterior)) {
+                @unlink($arquivoAnterior);
+            }
+
+            return ['sucesso' => true, 'mensagem' => 'Foto de perfil atualizada com sucesso.'];
+        } catch (PDOException $exception) {
+            if (is_file($destino)) {
+                @unlink($destino);
+            }
+
+            return ['sucesso' => false, 'mensagem' => 'Não foi possível registrar a foto. Atualize o banco de dados e tente novamente.'];
+        }
     }
 
     private function requireAluno(): void

@@ -121,8 +121,8 @@ Pense no projeto como uma escola organizada: algumas pastas recebem o pedido do 
 ### Pode afirmar como funcional no fluxo atual
 
 - Cadastro e login de aluno e professor, com senhas verificadas de forma protegida.
-- Trilhas de Álgebra por tema, com nove etapas por trilha e desbloqueio sequencial.
-- Etapas com cinco questões e recompensa de 10 XP na primeira conclusão.
+- Trilhas de Álgebra por tema, com treze etapas por trilha e desbloqueio sequencial.
+- Etapas com cinco questões, resultado detalhado por questão e 5 XP por acerto na primeira conclusão.
 - Cálculo de XP, níveis, sequência de atividade, progresso e registro de simulados.
 - Simulado com 20 questões, navegação, marcação para revisão e resultado percentual.
 - Persistência de conteúdos e registros no banco quando o banco está configurado; há também um banco complementar de questões no próprio projeto para manter a prática disponível.

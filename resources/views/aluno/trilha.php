@@ -2,23 +2,26 @@
 $area = $area ?? 'potenciacao';
 
 $conteudos = [
-    'potenciacao' => ['titulo' => 'Potencia&ccedil;&atilde;o', 'etapas' => ['Introdu&ccedil;&atilde;o', 'Base e expoente', 'Pot&ecirc;ncias de base 10', 'Exerc&iacute;cios de potencia&ccedil;&atilde;o', 'Revis&atilde;o', 'Produto de pot&ecirc;ncias', 'Quociente de pot&ecirc;ncias', 'Expoentes negativos', 'Desafio final']],
-    'fracoes-algebricas' => ['titulo' => 'Fra&ccedil;&otilde;es alg&eacute;bricas', 'etapas' => ['Termos alg&eacute;bricos', 'Dom&iacute;nio', 'Fator comum', 'Exerc&iacute;cios com fra&ccedil;&otilde;es', 'Revis&atilde;o', 'Multiplica&ccedil;&atilde;o', 'Soma e subtra&ccedil;&atilde;o', 'Fra&ccedil;&otilde;es complexas', 'Desafio final']],
-    'produtos-notaveis' => ['titulo' => 'Produtos not&aacute;veis', 'etapas' => ['Padr&otilde;es alg&eacute;bricos', 'Quadrado da soma', 'Quadrado da diferen&ccedil;a', 'Exerc&iacute;cios de produtos not&aacute;veis', 'Revis&atilde;o', 'Soma pela diferen&ccedil;a', 'Aplica&ccedil;&otilde;es', 'F&oacute;rmulas', 'Desafio final']],
-    'fatoracao' => ['titulo' => 'Fatora&ccedil;&atilde;o', 'etapas' => ['Fator comum', 'Agrupamento', 'Diferen&ccedil;a de quadrados', 'Exerc&iacute;cios de fatora&ccedil;&atilde;o', 'Revis&atilde;o', 'Trin&ocirc;mios', 'Soma de cubos', 'Pr&aacute;tica', 'Desafio final']],
-    'equacoes' => ['titulo' => 'Equa&ccedil;&otilde;es', 'etapas' => ['Princ&iacute;pio da igualdade', 'Termos semelhantes', 'Isolando a inc&oacute;gnita', 'Exerc&iacute;cios de equa&ccedil;&otilde;es', 'Revis&atilde;o', 'Par&ecirc;nteses', 'Problemas', '2&ordm; grau', 'Desafio final']],
-    'inequacoes' => ['titulo' => 'Inequa&ccedil;&otilde;es', 'etapas' => ['S&iacute;mbolos de compara&ccedil;&atilde;o', 'Conjunto solu&ccedil;&atilde;o', 'Reta num&eacute;rica', 'Exerc&iacute;cios de inequa&ccedil;&otilde;es', 'Revis&atilde;o', 'Intervalos', 'Sistemas', 'Pr&aacute;tica', 'Desafio final']],
+    'potenciacao' => ['titulo' => 'Potencia&ccedil;&atilde;o', 'etapas' => ['Introdu&ccedil;&atilde;o', 'Base e expoente', 'Pot&ecirc;ncias de base 10', 'Expoente zero e um', 'Exerc&iacute;cios de potencia&ccedil;&atilde;o', 'Revis&atilde;o', 'Produto de pot&ecirc;ncias', 'Quociente de pot&ecirc;ncias', 'Pot&ecirc;ncia de uma pot&ecirc;ncia', 'Expoentes negativos', 'Nota&ccedil;&atilde;o cient&iacute;fica', 'Propriedades combinadas', 'Desafio final']],
+    'fracoes-algebricas' => ['titulo' => 'Fra&ccedil;&otilde;es alg&eacute;bricas', 'etapas' => ['Termos alg&eacute;bricos', 'Dom&iacute;nio', 'Fator comum', 'Exerc&iacute;cios com fra&ccedil;&otilde;es', 'Revis&atilde;o', 'Multiplica&ccedil;&atilde;o', 'Soma e subtra&ccedil;&atilde;o', 'Denominador comum', 'Fra&ccedil;&otilde;es complexas', 'Equa&ccedil;&otilde;es fracion&aacute;rias', 'Simplifica&ccedil;&atilde;o avan&ccedil;ada', 'Aplica&ccedil;&otilde;es', 'Desafio final']],
+    'produtos-notaveis' => ['titulo' => 'Produtos not&aacute;veis', 'etapas' => ['Padr&otilde;es alg&eacute;bricos', 'Quadrado da soma', 'Quadrado da diferen&ccedil;a', 'Exerc&iacute;cios de produtos not&aacute;veis', 'Revis&atilde;o', 'Soma pela diferen&ccedil;a', 'Aplica&ccedil;&otilde;es', 'F&oacute;rmulas', 'Fatora&ccedil;&atilde;o de quadrados perfeitos', 'Bin&ocirc;mios com coeficientes', 'Express&otilde;es combinadas', 'C&aacute;lculo inteligente', 'Desafio final']],
+    'fatoracao' => ['titulo' => 'Fatora&ccedil;&atilde;o', 'etapas' => ['Fator comum', 'Agrupamento', 'Diferen&ccedil;a de quadrados', 'Exerc&iacute;cios de fatora&ccedil;&atilde;o', 'Revis&atilde;o', 'Trin&ocirc;mios', 'Soma de cubos', 'Pr&aacute;tica', 'Trin&ocirc;mio quadrado perfeito', 'Fatora&ccedil;&atilde;o completa', 'Substitui&ccedil;&atilde;o', 'Aplica&ccedil;&otilde;es e ra&iacute;zes', 'Desafio final']],
+    'equacoes' => ['titulo' => 'Equa&ccedil;&otilde;es', 'etapas' => ['Princ&iacute;pio da igualdade', 'Termos semelhantes', 'Isolando a inc&oacute;gnita', 'Exerc&iacute;cios de equa&ccedil;&otilde;es', 'Revis&atilde;o', 'Par&ecirc;nteses', 'Equa&ccedil;&otilde;es fracion&aacute;rias', 'Propor&ccedil;&otilde;es', 'Problemas', '2&ordm; grau', 'F&oacute;rmula de Bhaskara', 'Sistemas lineares', 'Desafio final']],
+    'inequacoes' => ['titulo' => 'Inequa&ccedil;&otilde;es', 'etapas' => ['S&iacute;mbolos de compara&ccedil;&atilde;o', 'Conjunto solu&ccedil;&atilde;o', 'Reta num&eacute;rica', 'Exerc&iacute;cios de inequa&ccedil;&otilde;es', 'Revis&atilde;o', 'Coeficientes negativos', 'Inequa&ccedil;&otilde;es compostas', 'Intervalos', 'Sistemas', 'Inequa&ccedil;&otilde;es fracion&aacute;rias', 'M&oacute;dulo', 'Pr&aacute;tica', 'Desafio final']],
 ];
 
 $conteudo = $conteudos[$area] ?? $conteudos['potenciacao'];
 $urlExercicios = app_route('/aluno/questoes') . '&area=' . urlencode($area);
 $layoutNos = [
-    ['x' => 50, 'y' => 6, 'icone' => '&#128214;'], ['x' => 37, 'y' => 17, 'icone' => '&#9733;'],
-    ['x' => 32, 'y' => 28, 'icone' => '&#9679;'], ['x' => 37, 'y' => 39, 'icone' => 'x<sup>2</sup>'],
-    ['x' => 51, 'y' => 50, 'icone' => '&#128214;'], ['x' => 64, 'y' => 61, 'icone' => '&#9679;'],
-    ['x' => 68, 'y' => 72, 'icone' => '&#9733;'], ['x' => 62, 'y' => 83, 'icone' => '&#8801;'],
-    ['x' => 48, 'y' => 94, 'icone' => '&#9679;'],
+    ['x' => 50, 'y' => 5, 'icone' => '&#128214;'], ['x' => 42, 'y' => 12, 'icone' => '&#9733;'],
+    ['x' => 34, 'y' => 19, 'icone' => '&#9679;'], ['x' => 31, 'y' => 26, 'icone' => 'x<sup>2</sup>'],
+    ['x' => 35, 'y' => 33, 'icone' => '&#128214;'], ['x' => 43, 'y' => 40, 'icone' => '&#9679;'],
+    ['x' => 53, 'y' => 47, 'icone' => '&#9733;'], ['x' => 62, 'y' => 54, 'icone' => '&#8801;'],
+    ['x' => 68, 'y' => 61, 'icone' => 'x<sup>2</sup>'], ['x' => 67, 'y' => 68, 'icone' => '&#128214;'],
+    ['x' => 61, 'y' => 75, 'icone' => '&#9679;'], ['x' => 54, 'y' => 82, 'icone' => '&#9733;'],
+    ['x' => 48, 'y' => 92, 'icone' => '&#127942;'],
 ];
+$caminhoConstelacao = 'M ' . implode(' L ', array_map(static fn (array $no): string => $no['x'] . ' ' . $no['y'], $layoutNos));
 
 $alunoId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
 $alunoId = $alunoId !== false && $alunoId !== null && $alunoId > 0 ? (int) $alunoId : null;
@@ -135,7 +138,7 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
 
         .learning-path {
             width: min(100%, 430px);
-            height: 1210px;
+            height: 1540px;
             border-radius: 220px;
             background: radial-gradient(ellipse 44% 88% at 50% 50%, rgba(24, 91, 199, .11), transparent 72%);
         }
@@ -257,7 +260,7 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
             .path-header { width: min(500px, 100%); margin: 8px auto 18px; }
             .path-header h1 { font-size: clamp(1.25rem, 6vw, 1.6rem); }
             .path-layout { grid-template-columns: 1fr; width: min(430px, 100%); gap: 20px; }
-            .learning-path { width: min(100%, 380px); height: 1100px; }
+            .learning-path { width: min(100%, 380px); height: 1390px; }
             .node-circle { width: 58px; height: 58px; }
             .path-node.current .node-circle { width: 64px; height: 64px; }
             .path-card { border-radius: 16px; }
@@ -313,14 +316,12 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
         <div class="path-track">
             <main class="learning-path" aria-label="Trilha de <?= strip_tags(html_entity_decode($conteudo['titulo'], ENT_QUOTES, 'UTF-8')) ?>">
                 <svg class="path-constellation" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <path class="constellation-glow" d="M 50 6 C 44 10, 39 13, 37 17 S 31 24, 32 28 S 34 36, 37 39 S 47 47, 51 50 S 62 57, 64 61 S 69 69, 68 72 S 65 80, 62 83 S 52 92, 48 94" />
-                    <path class="constellation-line" d="M 50 6 C 44 10, 39 13, 37 17 S 31 24, 32 28 S 34 36, 37 39 S 47 47, 51 50 S 62 57, 64 61 S 69 69, 68 72 S 65 80, 62 83 S 52 92, 48 94" />
+                    <path class="constellation-glow" d="<?= $caminhoConstelacao ?>" />
+                    <path class="constellation-line" d="<?= $caminhoConstelacao ?>" />
                     <g class="constellation-star">
-                        <circle cx="50" cy="6" r="1.25" /><circle cx="37" cy="17" r="1.25" />
-                        <circle cx="32" cy="28" r="1.25" /><circle cx="37" cy="39" r="1.25" />
-                        <circle cx="51" cy="50" r="1.25" /><circle cx="64" cy="61" r="1.25" />
-                        <circle cx="68" cy="72" r="1.25" /><circle cx="62" cy="83" r="1.25" />
-                        <circle cx="48" cy="94" r="1.25" />
+                        <?php foreach ($layoutNos as $ponto): ?>
+                            <circle cx="<?= $ponto['x'] ?>" cy="<?= $ponto['y'] ?>" r="1.25" />
+                        <?php endforeach; ?>
                     </g>
                 </svg>
                 <?php foreach ($nos as $indice => $no): ?>

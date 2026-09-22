@@ -20,6 +20,7 @@ class AuthService
         return [
             'id' => (int) $user['id'],
             'usuario' => $user['usuario'],
+            'foto_perfil' => $user['foto_perfil'] ?? null,
             'role' => 'aluno',
         ];
     }

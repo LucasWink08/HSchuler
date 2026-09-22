@@ -57,7 +57,7 @@ if ($alunoLogado) {
     foreach ($areas as $area) {
         $resumoArea = $trilhaService->getResumo($alunoId, $area['id']);
         $concluidasArea = max(0, (int) ($resumoArea['etapas_concluidas'] ?? 0));
-        $totalArea = max(1, (int) ($resumoArea['total_etapas'] ?? 9));
+        $totalArea = max(1, (int) ($resumoArea['total_etapas'] ?? 13));
         $concluidasArea = min($concluidasArea, $totalArea);
 
         $progressoTrilhas[$area['id']] = [
@@ -189,7 +189,7 @@ if ($alunoLogado) {
             </header>
             <div class="learning-cards">
                 <?php foreach ($areas as $area): ?>
-                    <?php $progresso = $progressoTrilhas[$area['id']] ?? ['concluidas' => 0, 'total' => 9, 'percentual' => 0]; ?>
+                    <?php $progresso = $progressoTrilhas[$area['id']] ?? ['concluidas' => 0, 'total' => 13, 'percentual' => 0]; ?>
                     <a class="learning-card" href="<?= app_route('/aluno/trilha') ?>&amp;area=<?= urlencode($area['id']) ?>" data-auth-required aria-label="Abrir trilha de <?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?>">
                         <span class="card-formula <?= $area['cor'] ?>"><?= $area['icone'] ?></span>
                         <strong><?= htmlspecialchars($area['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>

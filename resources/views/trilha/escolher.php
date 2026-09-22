@@ -23,7 +23,7 @@ $trilhas = [
 foreach ($trilhas as &$trilha) {
     $resumo = $alunoId === null ? null : $trilhaService->getResumo($alunoId, $trilha['id']);
     $trilha['concluidas'] = $resumo['etapas_concluidas'] ?? 0;
-    $trilha['total'] = $resumo['total_etapas'] ?? 9;
+    $trilha['total'] = $resumo['total_etapas'] ?? 13;
     $trilha['progresso'] = $trilha['total'] > 0 ? (int) round(($trilha['concluidas'] / $trilha['total']) * 100) : 0;
 }
 unset($trilha);
@@ -55,7 +55,7 @@ unset($trilha);
             <?php foreach ($trilhas as $trilha): ?>
                 <a class="trail-card <?= $trilha['cor'] ?>" href="<?= app_route('/aluno/trilha') ?>&area=<?= urlencode($trilha['id']) ?>" aria-label="Abrir trilha de <?= htmlspecialchars($trilha['titulo'], ENT_QUOTES, 'UTF-8') ?>">
                     <span class="trail-icon"><?= $trilha['icone'] ?></span><h2><?= htmlspecialchars($trilha['titulo'], ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars($trilha['descricao'], ENT_QUOTES, 'UTF-8') ?></p>
-                    <div class="trail-footer"><div class="trail-progress-label"><span><?= $alunoId === null ? '9 etapas disponíveis' : $trilha['concluidas'] . ' de ' . $trilha['total'] . ' etapas concluídas' ?></span><strong><?= $trilha['progresso'] ?>%</strong></div><div class="trail-progress"><i style="--progress:<?= $trilha['progresso'] ?>%"></i></div><span class="trail-open">Abrir trilha <b aria-hidden="true"><span>→</span></b></span></div>
+                    <div class="trail-footer"><div class="trail-progress-label"><span><?= $alunoId === null ? '13 etapas disponíveis' : $trilha['concluidas'] . ' de ' . $trilha['total'] . ' etapas concluídas' ?></span><strong><?= $trilha['progresso'] ?>%</strong></div><div class="trail-progress"><i style="--progress:<?= $trilha['progresso'] ?>%"></i></div><span class="trail-open">Abrir trilha <b aria-hidden="true"><span>→</span></b></span></div>
                 </a>
             <?php endforeach; ?>
         </section>
