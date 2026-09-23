@@ -5,8 +5,14 @@ class ProfessorController
     public function dashboard(): void
     {
         $this->requireProfessor();
-        header('Location: ' . app_route('/'));
-        exit;
+        $professorId = (int) $_SESSION['user_id'];
+        $repository = new ProfessorRepository();
+        $perfil = $repository->findProfile($professorId);
+        $resumo = $repository->getResumo($professorId);
+        $videos = $repository->listRecentVideos($professorId);
+        $atividades = $repository->listRecentActivities($professorId);
+
+        require APP_ROOT . '/resources/views/professor/dashboard.php';
     }
 
     public function videos(): void
@@ -22,6 +28,7 @@ class ProfessorController
     public function videoForm(): void
     {
         $this->requireProfessor();
+        $professorId = (int) $_SESSION['user_id'];
         $service = new VideoService();
         $area = $service->getArea((string) ($_GET['area'] ?? ''));
 
@@ -30,6 +37,12 @@ class ProfessorController
             exit;
         }
 
+        $turmaService = new TurmaService();
+        $turmas = $turmaService->getTurmasDoProfessor($professorId);
+        $turmaSelecionadaId = filter_var($_GET['turma_id'] ?? null, FILTER_VALIDATE_INT);
+        $turmaSelecionadaId = $turmaSelecionadaId !== false && $turmaSelecionadaId !== null && $turmaSelecionadaId > 0
+            ? (int) $turmaSelecionadaId
+            : null;
         $_SESSION['video_form_token'] = bin2hex(random_bytes(32));
         require APP_ROOT . '/resources/views/professor/cadastro_video.php';
     }
@@ -55,6 +68,8 @@ class ProfessorController
         $titulo = trim((string) ($_POST['titulo'] ?? ''));
         $descricao = trim((string) ($_POST['descricao'] ?? ''));
         $url = trim((string) ($_POST['url_video'] ?? ''));
+        $turmaId = filter_var($_POST['turma_id'] ?? null, FILTER_VALIDATE_INT);
+        $turmaId = $turmaId !== false && $turmaId !== null && $turmaId > 0 ? (int) $turmaId : null;
         $urlParts = filter_var($url, FILTER_VALIDATE_URL) ? parse_url($url) : null;
         $urlValida = is_array($urlParts) && in_array(strtolower((string) ($urlParts['scheme'] ?? '')), ['http', 'https'], true);
         $tituloValido = $titulo !== '' && $this->stringLength($titulo) <= 150;
@@ -62,6 +77,11 @@ class ProfessorController
 
         if (!$tituloValido || !$descricaoValida || !$urlValida) {
             header('Location: ' . app_route('/professor/video/cadastro') . '&area=' . rawurlencode($slug) . '&error=' . rawurlencode('Preencha um título e uma URL válida. A descrição pode ter até 2.000 caracteres.'));
+            exit;
+        }
+
+        if ($turmaId === null || (new TurmaService())->getTurmaDoProfessor((int) $_SESSION['user_id'], $turmaId) === null) {
+            header('Location: ' . app_route('/professor/video/cadastro') . '&area=' . rawurlencode($slug) . '&error=' . rawurlencode('Selecione uma turma sua para publicar a videoaula.'));
             exit;
         }
 
@@ -74,7 +94,7 @@ class ProfessorController
         }
 
         try {
-            $saved = $service->createVideo((int) $_SESSION['user_id'], $slug, $titulo, $descricao, $url);
+            $saved = $service->createVideo((int) $_SESSION['user_id'], $turmaId, $slug, $titulo, $descricao, $url);
         } catch (PDOException $exception) {
             $saved = false;
         }

@@ -15,6 +15,15 @@ $estaLogado = $alunoId !== null && $usuario !== '' && in_array($role, ['aluno', 
 $alunoLogado = $estaLogado && $role === 'aluno';
 $professorLogado = $estaLogado && $role === 'professor';
 $siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
+$streakImage = $siteRoot . '/imgs/streak.png';
+$turmasProfessor = [];
+if ($professorLogado) {
+    try {
+        $turmasProfessor = (new TurmaService())->getTurmasDoProfessor((int) $alunoId);
+    } catch (Throwable $exception) {
+        $turmasProfessor = [];
+    }
+}
 $resumo = [
     'xp' => null,
     'streak_atual' => null,
@@ -74,7 +83,7 @@ if ($alunoLogado) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSchuler — Domine a matemática</title>
-    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=40">
+    <link rel="stylesheet" href="<?= app_asset('css/estilo_homepage.css') ?>?v=42">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body class="home-page">
@@ -133,6 +142,18 @@ if ($alunoLogado) {
                 <h1 id="hero-title">Seja bem-vindo, <span>professor <?= htmlspecialchars($usuarioExibicao, ENT_QUOTES, 'UTF-8') ?></span></h1>
                 <p>Publique videoaulas para ampliar o acesso dos alunos aos conteúdos, acompanhe o ranking e, em breve, consulte o desempenho da turma por gráficos.</p>
             </section>
+            <section class="professor-class-overview" aria-labelledby="professor-classes-title">
+                <header><div><p>Turmas</p><h2 id="professor-classes-title">Suas turmas</h2></div><a href="<?= app_route('/professor/turmas') ?>">Gerenciar turmas →</a></header>
+                <?php if ($turmasProfessor === []): ?>
+                    <p class="professor-class-empty">Você ainda não criou uma turma. <a href="<?= app_route('/professor/turmas') ?>">Criar a primeira turma</a></p>
+                <?php else: ?>
+                    <div class="professor-class-list">
+                        <?php foreach (array_slice($turmasProfessor, 0, 3) as $turmaProfessor): ?>
+                            <a href="<?= app_route('/professor/turma') ?>&amp;id=<?= (int) $turmaProfessor['id'] ?>"><strong><?= htmlspecialchars($turmaProfessor['nome'], ENT_QUOTES, 'UTF-8') ?></strong><span><?= (int) $turmaProfessor['total_alunos'] ?> alunos · Código <?= htmlspecialchars($turmaProfessor['codigo'], ENT_QUOTES, 'UTF-8') ?></span></a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </section>
         <?php else: ?>
         <section class="home-hero" aria-labelledby="hero-title">
             <div class="hero-orbit" aria-hidden="true"></div>
@@ -172,7 +193,7 @@ if ($alunoLogado) {
                     <?php endif; ?>
                 </div>
                 <div class="profile-stats">
-                    <div><span class="stat-symbol fire" aria-hidden="true">&#128293;</span><p>Sequência<strong><?= $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
+                    <div><img class="stat-symbol fire streak-icon" src="<?= htmlspecialchars($streakImage, ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true"><p>Sequência<strong><?= $streak !== null ? $streak . ' dias' : '&mdash;' ?></strong></p></div>
                     <a href="<?= app_route('/ranking') ?>"><span class="stat-symbol trophy" aria-hidden="true">&#127942;</span><p>Ranking<strong>Ver ranking</strong></p></a>
                 </div>
             </aside>

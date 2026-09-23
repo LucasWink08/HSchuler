@@ -22,6 +22,7 @@ if ($navbarLoggedIn) {
 
 $navbarLinks = $navbarRole === 'professor'
     ? [
+        'turmas' => ['label' => 'Turmas', 'route' => '/professor/turmas'],
         'publicar-videoaula' => ['label' => 'Publicar videoaula', 'route' => '/professor/videos'],
         'desempenho' => ['label' => 'Desempenho dos alunos', 'route' => null],
         'sobre' => ['label' => 'Sobre o sistema', 'route' => '/sobre'],
@@ -29,7 +30,7 @@ $navbarLinks = $navbarRole === 'professor'
     ]
     : [
         'trilhas' => ['label' => 'Trilha de aprendizado', 'route' => '/trilhas'],
-        'videoaulas' => ['label' => 'Videoaulas', 'route' => '/videoaulas'],
+        'turma' => ['label' => 'Turma', 'route' => '/aluno/turma'],
         'simulados' => ['label' => 'Simulados', 'route' => '/aluno/simulados'],
         'ranking' => ['label' => 'Ranking', 'route' => '/ranking'],
         'sobre' => ['label' => 'Sobre', 'route' => '/sobre'],

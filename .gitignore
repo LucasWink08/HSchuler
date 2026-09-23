@@ -3,3 +3,7 @@ vendor/
 storage/logs/
 /public/uploads/perfis/*
 !/public/uploads/perfis/.gitkeep
+/storage/uploads/atividades/*
+!/storage/uploads/atividades/.gitkeep
+/storage/uploads/entregas/*
+!/storage/uploads/entregas/.gitkeep

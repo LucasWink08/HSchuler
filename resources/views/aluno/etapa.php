@@ -12,6 +12,9 @@ $totalEtapas = (int) ($resumo['total_etapas'] ?? 0);
 $progressoGeral = $totalEtapas > 0 ? (int) round(($etapasConcluidas / $totalEtapas) * 100) : 0;
 $progressoInicial = $total > 0 ? (int) round(100 / $total) : 0;
 $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
+$siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
+$backgroundDois = $siteRoot . '/imgs/background2.png';
+$streakImage = $siteRoot . '/imgs/streak.png';
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -28,7 +31,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
             min-height: 100svh;
             margin: 0;
             padding: 0 20px 40px;
-            background: #02050a url("<?= app_asset('images/home/background.png') ?>") center top / cover fixed;
+            background: #02050a url("<?= htmlspecialchars($backgroundDois, ENT_QUOTES, 'UTF-8') ?>") center top / cover fixed;
             color: #f4f7ff;
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -116,6 +119,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
         .stage-side-row b { color: #c448ff; white-space: nowrap; }
         .stage-side .stage-progress { margin: 0; }
         .stage-streak { margin: 20px 0 0; padding-top: 20px; border-top: 1px solid rgba(141, 165, 207, .2); color: #d6deec; }
+        .stage-streak-icon { width: 1.15em; height: 1.15em; margin-right: .18em; object-fit: contain; vertical-align: -.24em; filter: drop-shadow(0 0 6px rgba(255, 132, 35, .72)); }
         .stage-empty { padding: 34px 30px; color: #c0cbe0; line-height: 1.5; text-align: center; }
         @media (max-width: 1180px) { .stage-shell { grid-template-columns: minmax(0, 700px) 270px; } .stage-overview { display: none; } }
         @media (max-width: 820px) {
@@ -143,7 +147,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
                 <div><strong><?= $progressoGeral ?>%</strong><small>concluído</small></div>
             </div>
             <div class="stage-stat">Nível atual<b>Nível <?= (int) ($resumo['nivel'] ?? 1) ?></b></div>
-            <div class="stage-stat">Sequência atual<b>🔥 <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</b></div>
+            <div class="stage-stat">Sequência atual<b><img class="stage-streak-icon" src="<?= htmlspecialchars($streakImage, ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true"><?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</b></div>
             <div class="stage-stat">Etapas concluídas<b><?= $etapasConcluidas ?> de <?= $totalEtapas ?></b></div>
         </aside>
 
@@ -230,7 +234,7 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
             <h2>Seu progresso</h2>
             <div class="stage-side-row"><span id="stage-side-count">Questão 1 de <?= $total ?></span><b>5 XP por acerto</b></div>
             <div class="stage-progress"><i id="stage-side-progress" style="--progress:<?= $progressoInicial ?>%"></i></div>
-            <p class="stage-streak">🔥 Sequência de <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</p>
+            <p class="stage-streak"><img class="stage-streak-icon" src="<?= htmlspecialchars($streakImage, ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true">Sequência de <?= (int) ($resumo['streak_atual'] ?? 0) ?> dias</p>
         </aside>
     </main>
 

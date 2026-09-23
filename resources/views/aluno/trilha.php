@@ -1,5 +1,7 @@
 ﻿<?php
 $area = $area ?? 'potenciacao';
+$siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
+$streakImage = $siteRoot . '/imgs/streak.png';
 
 $conteudos = [
     'potenciacao' => ['titulo' => 'Potencia&ccedil;&atilde;o', 'etapas' => ['Introdu&ccedil;&atilde;o', 'Base e expoente', 'Pot&ecirc;ncias de base 10', 'Expoente zero e um', 'Exerc&iacute;cios de potencia&ccedil;&atilde;o', 'Revis&atilde;o', 'Produto de pot&ecirc;ncias', 'Quociente de pot&ecirc;ncias', 'Pot&ecirc;ncia de uma pot&ecirc;ncia', 'Expoentes negativos', 'Nota&ccedil;&atilde;o cient&iacute;fica', 'Propriedades combinadas', 'Desafio final']],
@@ -67,6 +69,7 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
         @media(max-width:1040px){.path-layout{grid-template-columns:minmax(340px,380px) minmax(270px,310px);width:min(750px,100%)}.path-streak{grid-column:1;grid-row:2;position:static;max-height:none}.path-track{grid-column:1;grid-row:1}.path-sidebar{grid-column:2;grid-row:1 / span 2}}@media(max-width:720px){body.path-page{padding:20px 12px 36px}.path-header{margin-bottom:14px}.path-header h1{font-size:1.32rem}.path-back{padding:7px 8px}.path-layout{grid-template-columns:1fr;width:min(380px,100%);gap:18px}.path-track,.path-streak,.path-sidebar{grid-column:auto;grid-row:auto}.path-track{order:1}.path-streak{order:2}.path-sidebar{order:3}.learning-path{height:1180px;width:min(340px,100%)}.path-node{width:66px;height:66px}.node-circle{width:56px;height:56px}.path-node.current .node-circle{width:60px;height:60px}}
 
         /* Percurso e painéis alinhados à identidade visual espacial da plataforma. */
+        .streak-count .streak-icon { width: 31px; height: 31px; object-fit: contain; filter: drop-shadow(0 0 7px rgba(255, 132, 35, .72)); }
         body.path-page {
             position: relative;
             isolation: isolate;
@@ -300,7 +303,7 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
                 <?php if ($streakAtual === null): ?>
                     <p class="path-card-copy" style="margin-top:10px">Entre para consultar a sequÃªncia registrada nas suas atividades.</p>
                 <?php else: ?>
-                    <div class="streak-count"><span aria-hidden="true">&#128293;</span><strong><?= $streakAtual ?></strong><small>dias consecutivos</small></div>
+                    <div class="streak-count"><img class="streak-icon" src="<?= htmlspecialchars($streakImage, ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true"><strong><?= $streakAtual ?></strong><small>dias consecutivos</small></div>
                     <div class="streak-stats"><div><span>Maior sequÃªncia</span><strong><?= $formatarDado($maiorStreak) ?> dias</strong></div><div><span>Dias registrados</span><strong><?= count($diasAtividade) ?></strong></div></div>
                     <?php if ($diasAtividade === []): ?>
                         <p class="path-card-copy" style="margin-top:14px">Nenhuma atividade foi registrada ainda.</p>

@@ -18,9 +18,9 @@ class VideoService
         $this->repository = new VideoRepository();
     }
 
-    public function getAreas(): array
+    public function getAreas(?int $turmaId = null): array
     {
-        $counts = $this->repository->getVideoCountsByModulo();
+        $counts = $this->repository->getVideoCountsByModulo($turmaId);
         $areas = [];
 
         foreach (self::AREAS as $slug => $area) {
@@ -49,23 +49,28 @@ class VideoService
         return $area;
     }
 
-    public function getVideos(string $slug): array
+    public function getVideos(string $slug, ?int $turmaId = null): array
     {
         $area = $this->getArea($slug);
         if ($area === null || $area['modulo_id'] === null) {
             return [];
         }
 
-        return $this->repository->listByModulo($area['modulo_id']);
+        return $this->repository->listByModulo($area['modulo_id'], $turmaId);
     }
 
-    public function createVideo(int $professorId, string $slug, string $titulo, string $descricao, string $url): bool
+    public function getVideo(int $videoId, ?int $turmaId = null): ?array
+    {
+        return $videoId > 0 ? $this->repository->findById($videoId, $turmaId) : null;
+    }
+
+    public function createVideo(int $professorId, int $turmaId, string $slug, string $titulo, string $descricao, string $url): bool
     {
         $area = $this->getArea($slug);
         if ($area === null || $area['modulo_id'] === null) {
             return false;
         }
 
-        return $this->repository->create($professorId, $area['modulo_id'], $titulo, $descricao, $url);
+        return $this->repository->create($professorId, $area['modulo_id'], $turmaId, $titulo, $descricao, $url);
     }
 }

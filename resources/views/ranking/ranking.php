@@ -1,3 +1,7 @@
+<?php
+$siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
+$backgroundDois = $siteRoot . '/imgs/background2.png';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -12,7 +16,7 @@
       min-height: 100svh;
       overflow-x: hidden;
       overflow-y: auto;
-      background: #02050a url("<?= app_asset('images/home/background.png') ?>") center top / cover fixed;
+      background: #02050a url("<?= htmlspecialchars($backgroundDois, ENT_QUOTES, 'UTF-8') ?>") center top / cover fixed;
       color: #edf3ff;
       font-family: Arial, Helvetica, sans-serif;
     }

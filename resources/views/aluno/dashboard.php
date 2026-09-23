@@ -8,6 +8,9 @@ $nomePerfil = trim((string) ($perfil['usuario'] ?? $_SESSION['usuario'] ?? 'Alun
 $emailPerfil = trim((string) ($perfil['email'] ?? ''));
 $fotoPerfil = basename(trim((string) ($perfil['foto_perfil'] ?? '')));
 $fotoUrl = $fotoPerfil === '' ? '' : APP_URL . '/uploads/perfis/' . rawurlencode($fotoPerfil);
+$siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
+$backgroundDois = $siteRoot . '/imgs/background2.png';
+$streakImage = $siteRoot . '/imgs/streak.png';
 $inicialPerfil = function_exists('mb_substr') ? mb_strtoupper(mb_substr($nomePerfil, 0, 1, 'UTF-8'), 'UTF-8') : strtoupper(substr($nomePerfil, 0, 1));
 $etapasConcluidas = (int) ($resumo['etapas_concluidas'] ?? 0);
 $totalEtapas = (int) ($resumo['total_etapas'] ?? 0);
@@ -23,7 +26,7 @@ $progresso = $totalEtapas > 0 ? (int) round(($etapasConcluidas / $totalEtapas) *
     <style>
         :root { color-scheme: dark; }
         * { box-sizing: border-box; }
-        body.profile-page { display: block !important; min-height: 100svh; margin: 0; overflow-x: hidden; color: #edf4ff; background: radial-gradient(circle at 76% 14%, rgba(71, 87, 222, .24), transparent 26%), radial-gradient(circle at 13% 84%, rgba(136, 50, 224, .18), transparent 31%), #03050c; font-family: Arial, Helvetica, sans-serif; isolation: isolate; }
+        body.profile-page { display: block !important; min-height: 100svh; margin: 0; overflow-x: hidden; color: #edf4ff; background: radial-gradient(circle at 76% 14%, rgba(71, 87, 222, .24), transparent 26%), radial-gradient(circle at 13% 84%, rgba(136, 50, 224, .18), transparent 31%), #03050c url("<?= htmlspecialchars($backgroundDois, ENT_QUOTES, 'UTF-8') ?>") center top / cover fixed; font-family: Arial, Helvetica, sans-serif; isolation: isolate; }
         body.profile-page::before { position: fixed; z-index: -1; inset: 0; content: ""; opacity: .38; background-image: radial-gradient(circle at 12% 15%, #d8ecff 0 1px, transparent 1.7px), radial-gradient(circle at 68% 11%, #d8ecff 0 1px, transparent 1.6px), radial-gradient(circle at 89% 39%, #d8ecff 0 1px, transparent 1.5px), radial-gradient(circle at 31% 71%, #d8ecff 0 1px, transparent 1.5px), radial-gradient(circle at 60% 87%, #d8ecff 0 1px, transparent 1.6px); background-size: 270px 246px, 344px 318px, 304px 280px, 241px 259px, 389px 332px; pointer-events: none; }
         body.profile-page .site-nav { position: relative; z-index: 20; display: grid; width: min(calc(100% - 48px), 1240px); min-height: 76px; margin: 0 auto; padding: 16px 0 10px; }
         .profile-main { width: min(calc(100% - 48px), 1100px); margin: 22px auto 64px; }
@@ -65,6 +68,7 @@ $progresso = $totalEtapas > 0 ? (int) round(($etapasConcluidas / $totalEtapas) *
         .card .stat-detail { display: block; margin-top: 7px; color: #8fa7cc; font-size: .72rem; }
         .card.is-xp strong { color: #ffcf6b; }
         .card.is-streak strong { color: #ffbc6b; }
+        .profile-streak-icon { width: .96em; height: .96em; margin-right: .13em; object-fit: contain; vertical-align: -.15em; filter: drop-shadow(0 0 7px rgba(255, 132, 35, .72)); }
         .quick-links { position: static; z-index: auto; display: grid; width: auto; margin: 0; padding: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; background: transparent; }
         .quick-link { display: grid; gap: 9px; min-height: 130px; padding: 20px; border: 1px solid rgba(106, 148, 230, .35); border-radius: 16px; background: rgba(11, 20, 42, .75); color: #ecf3ff; text-decoration: none; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
         .quick-link:hover, .quick-link:focus-visible { border-color: #8fc3ff; background: rgba(28, 59, 118, .66); outline: none; transform: translateY(-3px); }
@@ -114,7 +118,7 @@ $progresso = $totalEtapas > 0 ? (int) round(($etapasConcluidas / $totalEtapas) *
         <section class="stats" aria-label="Indicadores de desempenho">
             <article class="card is-xp"><small>XP total</small><strong><?= (int) ($resumo['xp'] ?? 0) ?></strong><span class="stat-detail">Pontos acumulados</span></article>
             <article class="card"><small>Nível atual</small><strong><?= (int) ($resumo['nivel'] ?? 1) ?></strong><span class="stat-detail">Continue praticando</span></article>
-            <article class="card is-streak"><small>Sequência diária</small><strong>🔥 <?= (int) ($resumo['streak_atual'] ?? 0) ?></strong><span class="stat-detail">Maior: <?= (int) ($resumo['maior_streak'] ?? 0) ?> dias</span></article>
+            <article class="card is-streak"><small>Sequência diária</small><strong><img class="profile-streak-icon" src="<?= htmlspecialchars($streakImage, ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true"><?= (int) ($resumo['streak_atual'] ?? 0) ?></strong><span class="stat-detail">Maior: <?= (int) ($resumo['maior_streak'] ?? 0) ?> dias</span></article>
             <article class="card"><small>Etapas concluídas</small><strong><?= $etapasConcluidas ?>/<?= $totalEtapas ?></strong><span class="stat-detail">Trilhas de álgebra</span></article>
         </section>
 

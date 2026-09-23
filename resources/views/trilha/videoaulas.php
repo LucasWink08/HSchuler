@@ -1,3 +1,7 @@
+<?php
+$turmaSelecionada = $turmaSelecionada ?? null;
+$turmaQuery = $turmaSelecionada !== null ? '&amp;turma_id=' . (int) $turmaSelecionada['id'] : '';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -369,7 +373,7 @@
     </header>
 
     <?php if ($areaSelecionada !== null): ?>
-      <p class="video-back"><a href="<?= app_route('/videoaulas') ?>">← Ver todos os conteúdos</a></p>
+      <p class="video-back"><a href="<?= app_route('/videoaulas') ?><?= $turmaQuery ?>">← Ver todos os conteúdos</a></p>
       <section class="video-grid" aria-label="Videoaulas de <?= htmlspecialchars($areaSelecionada['titulo'], ENT_QUOTES, 'UTF-8') ?>">
         <?php if ($videos === []): ?>
           <p class="video-empty">Ainda não há videoaulas publicadas para este conteúdo.</p>
@@ -384,7 +388,7 @@
               <p class="video-desc"><?= htmlspecialchars((string) ($video['descricao'] ?: 'Assista à videoaula e avance nos estudos.'), ENT_QUOTES, 'UTF-8') ?></p>
               <div class="video-actions">
                 <span class="video-pill">Professor <?= htmlspecialchars($video['professor_nome'], ENT_QUOTES, 'UTF-8') ?></span>
-                <a class="video-link" href="<?= htmlspecialchars($video['url_video'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Assistir</a>
+                <a class="video-link" href="<?= app_route('/videoaulas/assistir') ?>&amp;id=<?= (int) $video['id'] ?>&amp;area=<?= urlencode($areaSelecionada['slug']) ?><?= $turmaQuery ?>">Assistir</a>
               </div>
             </article>
           <?php endforeach; ?>
@@ -402,7 +406,7 @@
             <p class="video-desc"><?= htmlspecialchars($area['descricao'], ENT_QUOTES, 'UTF-8') ?></p>
             <div class="video-actions">
               <span class="video-pill"><?= (int) $area['video_count'] ?> <?= (int) $area['video_count'] === 1 ? 'aula' : 'aulas' ?></span>
-              <a class="video-link" href="<?= app_route('/videoaulas') ?>&amp;area=<?= urlencode($area['slug']) ?>">Ver aulas</a>
+              <a class="video-link" href="<?= app_route('/videoaulas') ?>&amp;area=<?= urlencode($area['slug']) ?><?= $turmaQuery ?>">Ver aulas</a>
             </div>
           </article>
         <?php endforeach; ?>
