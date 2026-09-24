@@ -18,8 +18,15 @@ class ProfessorController
     public function videos(): void
     {
         $this->requireProfessor();
+        $professorId = (int) $_SESSION['user_id'];
         $service = new VideoService();
-        $areas = $service->getAreas();
+        $turmaId = filter_var($_GET['turma_id'] ?? null, FILTER_VALIDATE_INT);
+        $turmaId = $turmaId !== false && $turmaId !== null && $turmaId > 0 ? (int) $turmaId : null;
+        $turmaSelecionada = $turmaId === null ? null : (new TurmaService())->getTurmaDoProfessor($professorId, $turmaId);
+        if ($turmaSelecionada === null) {
+            $turmaId = null;
+        }
+        $areas = $service->getAreas($turmaId);
         $success = trim((string) ($_GET['success'] ?? ''));
         $error = trim((string) ($_GET['error'] ?? ''));
         require APP_ROOT . '/resources/views/professor/videos.php';
@@ -105,7 +112,7 @@ class ProfessorController
         }
 
         unset($_SESSION['video_form_token']);
-        header('Location: ' . app_route('/professor/videos') . '&success=' . rawurlencode('Videoaula publicada com sucesso.'));
+        header('Location: ' . app_route('/professor/turma') . '&id=' . $turmaId . '&aba=videoaulas&status=ok&mensagem=' . rawurlencode('Videoaula publicada com sucesso.'));
         exit;
     }
 

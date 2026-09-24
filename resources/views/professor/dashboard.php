@@ -105,7 +105,7 @@ $formatarData = static function ($data): string {
                 <?php else: ?>
                     <?php foreach ($videos as $video): ?>
                         <article class="teacher-entry">
-                            <div class="teacher-entry-top"><h4><?= htmlspecialchars($video['titulo'], ENT_QUOTES, 'UTF-8') ?></h4><a class="teacher-entry-link" href="<?= app_route('/videoaulas/assistir') ?>&amp;id=<?= (int) $video['id'] ?>">Ver →</a></div>
+                            <div class="teacher-entry-top"><h4><?= htmlspecialchars($video['titulo'], ENT_QUOTES, 'UTF-8') ?></h4><span class="teacher-entry-link">Publicada</span></div>
                             <?php if (trim((string) ($video['descricao'] ?? '')) !== ''): ?><p><?= htmlspecialchars((string) $video['descricao'], ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
                             <div class="teacher-entry-meta"><span class="teacher-tag"><?= htmlspecialchars((string) ($video['modulo_nome'] ?? 'Sem módulo'), ENT_QUOTES, 'UTF-8') ?></span><span><?= htmlspecialchars($formatarData($video['created_at'] ?? null), ENT_QUOTES, 'UTF-8') ?></span></div>
                         </article>

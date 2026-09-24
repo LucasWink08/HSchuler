@@ -15,6 +15,8 @@ $etapaNome = (string) ($etapa['nome'] ?? 'Etapa da trilha');
 $siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
 $backgroundDois = $siteRoot . '/imgs/background2.png';
 $streakImage = $siteRoot . '/imgs/streak.png';
+$planetaUm = $siteRoot . '/imgs/planeta.png';
+$planetaDois = $siteRoot . '/imgs/planeta2.png';
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -36,8 +38,16 @@ $streakImage = $siteRoot . '/imgs/streak.png';
             font-family: Arial, Helvetica, sans-serif;
         }
         body.stage-page .site-nav { margin-bottom: 26px; }
+        .stage-planets { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+        .stage-planet { position: absolute; height: auto; user-select: none; }
+        .stage-planet-one { top: 16%; left: -13vw; width: min(350px, 27vw); opacity: .4; filter: drop-shadow(0 0 26px rgba(213, 92, 255, .28)); animation: stage-planet-drift 25s ease-in-out infinite alternate; }
+        .stage-planet-two { right: -13vw; bottom: 4%; width: min(375px, 29vw); opacity: .48; filter: drop-shadow(0 0 30px rgba(40, 210, 255, .27)); animation: stage-planet-drift-reverse 28s ease-in-out infinite alternate; }
+        @keyframes stage-planet-drift { to { transform: translate(28px, 26px) rotate(6deg); } }
+        @keyframes stage-planet-drift-reverse { to { transform: translate(-30px, -22px) rotate(-6deg); } }
         .stage-shell {
             display: grid;
+            position: relative;
+            z-index: 1;
             grid-template-columns: 230px minmax(0, 700px) 270px;
             gap: clamp(20px, 3vw, 48px);
             align-items: start;
@@ -133,12 +143,18 @@ $streakImage = $siteRoot . '/imgs/streak.png';
             .stage-option-letter { width: 38px; height: 38px; flex-basis: 38px; }
             .stage-option-answer { font-size: .98rem; }
             .stage-button-primary { min-width: 0; flex: 1; }
+            .stage-planet-one { top: 18%; left: -37vw; width: 250px; opacity: .23; }
+            .stage-planet-two { right: -39vw; bottom: 4%; width: 260px; opacity: .28; }
         }
-        @media (prefers-reduced-motion: reduce) { .stage-progress > i, .stage-option, .stage-button { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .stage-progress > i, .stage-option, .stage-button { transition: none; } .stage-planet { animation: none; } }
     </style>
 </head>
 <body class="stage-page">
     <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+    <div class="stage-planets" aria-hidden="true">
+        <img class="stage-planet stage-planet-one" src="<?= htmlspecialchars($planetaUm, ENT_QUOTES, 'UTF-8') ?>" alt="">
+        <img class="stage-planet stage-planet-two" src="<?= htmlspecialchars($planetaDois, ENT_QUOTES, 'UTF-8') ?>" alt="">
+    </div>
 
     <main class="stage-shell">
         <aside class="stage-card stage-summary stage-overview" aria-label="Seu progresso geral">

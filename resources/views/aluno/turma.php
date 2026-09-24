@@ -2,6 +2,7 @@
 $turmas = $turmas ?? [];
 $mensagem = $mensagem ?? '';
 $status = $status ?? '';
+$atividadesProximas = $atividadesProximas ?? [];
 $token = (string) ($_SESSION['turma_aluno_token'] ?? '');
 ?>
 <!doctype html>
@@ -22,6 +23,15 @@ $token = (string) ($_SESSION['turma_aluno_token'] ?? '');
         </section>
 
         <?php if ($mensagem !== ''): ?><p class="classroom-notice <?= $status === 'ok' ? 'is-ok' : 'is-error' ?>" role="status"><?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
+
+        <?php if ($atividadesProximas !== []): ?>
+            <section class="classroom-upcoming" aria-labelledby="upcoming-title">
+                <div><p class="classroom-eyebrow">Atenção aos prazos</p><h2 id="upcoming-title"><?= count($atividadesProximas) === 1 ? 'Há uma atividade com prazo próximo' : 'Há atividades com prazos próximos' ?></h2></div>
+                <div class="classroom-upcoming-list">
+                    <?php foreach ($atividadesProximas as $atividade): ?><a href="<?= app_route('/aluno/turma/detalhe') ?>&amp;id=<?= (int) $atividade['turma_id'] ?>&amp;aba=atividades"><span><strong><?= htmlspecialchars((string) $atividade['titulo'], ENT_QUOTES, 'UTF-8') ?></strong><small><?= htmlspecialchars((string) $atividade['turma_nome'], ENT_QUOTES, 'UTF-8') ?></small></span><em><?= htmlspecialchars((string) $atividade['prazo_texto'], ENT_QUOTES, 'UTF-8') ?></em></a><?php endforeach; ?>
+                </div>
+            </section>
+        <?php endif; ?>
 
         <section class="classroom-panel" style="margin-top:28px" aria-labelledby="join-title">
             <h2 id="join-title">Entrar em uma turma</h2>

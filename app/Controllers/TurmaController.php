@@ -49,7 +49,10 @@ class TurmaController
 
         $this->garantirToken('atividade_turma_token');
         $this->garantirToken('nota_entrega_token');
+        $this->garantirToken('aviso_turma_token');
+        $aba = $this->getAbaAtiva();
         $atividades = $service->getAtividadesDaTurma((int) $turma['id']);
+        $avisos = $service->getAvisosDaTurma((int) $turma['id']);
         $alunos = $service->getAlunosDaTurma((int) $turma['id']);
         $entregas = $service->getEntregasDaTurmaParaProfessor((int) $turma['id'], $professorId);
         $mensagem = trim((string) ($_GET['mensagem'] ?? ''));
@@ -65,7 +68,7 @@ class TurmaController
             $this->redirect(app_route('/professor/turmas'));
         }
 
-        $destino = '/professor/turma&id=' . $turmaId;
+        $destino = '/professor/turma&id=' . $turmaId . '&aba=atividades';
         if (!$this->validarToken('atividade_turma_token', (string) ($_POST['token'] ?? ''))) {
             $this->redirecionarComMensagem($destino, false, 'A solicitação expirou. Atualize a página e tente novamente.');
         }
@@ -86,12 +89,39 @@ class TurmaController
         $this->redirecionarComMensagem($destino, (bool) $resultado['sucesso'], (string) $resultado['mensagem']);
     }
 
+    public function criarAviso(): void
+    {
+        $professorId = $this->requireProfessor();
+        $turmaId = $this->getTurmaId();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $turmaId === null) {
+            $this->redirect(app_route('/professor/turmas'));
+        }
+
+        $destino = '/professor/turma&id=' . $turmaId . '&aba=avisos';
+        if (!$this->validarToken('aviso_turma_token', (string) ($_POST['token'] ?? ''))) {
+            $this->redirecionarComMensagem($destino, false, 'A solicitação expirou. Atualize a página e tente novamente.');
+        }
+
+        try {
+            $resultado = (new TurmaService())->criarAviso(
+                $professorId,
+                $turmaId,
+                (string) ($_POST['mensagem'] ?? '')
+            );
+        } catch (Throwable $exception) {
+            $resultado = ['sucesso' => false, 'mensagem' => 'Não foi possível publicar o aviso. Tente novamente.'];
+        }
+
+        $this->redirecionarComMensagem($destino, (bool) $resultado['sucesso'], (string) $resultado['mensagem']);
+    }
+
     public function alunoIndex(): void
     {
         $alunoId = $this->requireAluno();
         $service = new TurmaService();
         $this->garantirToken('turma_aluno_token');
         $turmas = $service->getTurmasDoAluno($alunoId);
+        $atividadesProximas = $service->getAtividadesPendentesProximasDoAluno($alunoId);
         $mensagem = trim((string) ($_GET['mensagem'] ?? ''));
         $status = ($_GET['status'] ?? '') === 'ok' ? 'ok' : ($mensagem !== '' ? 'erro' : '');
         require APP_ROOT . '/resources/views/aluno/turma.php';
@@ -133,7 +163,9 @@ class TurmaController
         }
 
         $this->garantirToken('entrega_turma_token');
+        $aba = $this->getAbaAtiva();
         $atividades = $service->getAtividadesDaTurmaParaAluno((int) $turma['id'], $alunoId);
+        $avisos = $service->getAvisosDaTurma((int) $turma['id']);
         $mensagem = trim((string) ($_GET['mensagem'] ?? ''));
         $status = ($_GET['status'] ?? '') === 'ok' ? 'ok' : ($mensagem !== '' ? 'erro' : '');
         require APP_ROOT . '/resources/views/aluno/turma_detalhe.php';
@@ -148,7 +180,7 @@ class TurmaController
             $this->redirect(app_route('/aluno/turma'));
         }
 
-        $destino = '/aluno/turma/detalhe&id=' . $turmaId;
+        $destino = '/aluno/turma/detalhe&id=' . $turmaId . '&aba=atividades';
         if (!$this->validarToken('entrega_turma_token', (string) ($_POST['token'] ?? ''))) {
             $this->redirecionarComMensagem($destino, false, 'A solicitação expirou. Atualize a página e tente novamente.');
         }
@@ -171,7 +203,7 @@ class TurmaController
             $this->redirect(app_route('/professor/turmas'));
         }
 
-        $destino = '/professor/turma&id=' . $turmaId;
+        $destino = '/professor/turma&id=' . $turmaId . '&aba=atividades';
         if (!$this->validarToken('nota_entrega_token', (string) ($_POST['token'] ?? ''))) {
             $this->redirecionarComMensagem($destino, false, 'A solicitação expirou. Atualize a página e tente novamente.');
         }
@@ -279,6 +311,12 @@ class TurmaController
     {
         $turmaId = filter_var($_GET['id'] ?? $_POST['turma_id'] ?? null, FILTER_VALIDATE_INT);
         return $turmaId !== false && $turmaId !== null && $turmaId > 0 ? (int) $turmaId : null;
+    }
+
+    private function getAbaAtiva(): string
+    {
+        $aba = strtolower(trim((string) ($_GET['aba'] ?? 'avisos')));
+        return in_array($aba, ['avisos', 'atividades', 'videoaulas'], true) ? $aba : 'avisos';
     }
 
     private function garantirToken(string $chave): void

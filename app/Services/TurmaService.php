@@ -5,6 +5,7 @@ class TurmaService
     private const CODIGO_ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     private const MAX_ANEXOS = 5;
     private const MAX_TAMANHO_ANEXO = 10 * 1024 * 1024;
+    private const FUSO_HORARIO = 'America/Sao_Paulo';
     private static bool $schemaVerificado = false;
 
     private TurmaRepository $repository;
@@ -54,17 +55,37 @@ class TurmaService
 
     public function getAtividadesDaTurma(int $turmaId): array
     {
-        return $this->repository->listActivities($turmaId);
+        return $this->enriquecerAtividades($this->repository->listActivities($turmaId));
     }
 
     public function getAtividadesDaTurmaParaAluno(int $turmaId, int $alunoId): array
     {
-        return $this->repository->listActivitiesForStudent($turmaId, $alunoId);
+        return $this->enriquecerAtividades($this->repository->listActivitiesForStudent($turmaId, $alunoId));
     }
 
     public function getEntregasDaTurmaParaProfessor(int $turmaId, int $professorId): array
     {
         return $this->repository->listSubmissionsForTeacher($turmaId, $professorId);
+    }
+
+    public function getAvisosDaTurma(int $turmaId): array
+    {
+        return $this->repository->listAnnouncements($turmaId);
+    }
+
+    public function criarAviso(int $professorId, int $turmaId, string $mensagem): array
+    {
+        if ($this->getTurmaDoProfessor($professorId, $turmaId) === null) {
+            return ['sucesso' => false, 'mensagem' => 'Turma não encontrada.'];
+        }
+
+        $mensagem = trim($mensagem);
+        if ($mensagem === '' || $this->stringLength($mensagem) > 5000) {
+            return ['sucesso' => false, 'mensagem' => 'Escreva um aviso de até 5.000 caracteres.'];
+        }
+
+        $this->repository->createAnnouncement($turmaId, $professorId, $mensagem);
+        return ['sucesso' => true, 'mensagem' => 'Aviso publicado para a turma.'];
     }
 
     public function criarAtividade(int $professorId, int $turmaId, string $titulo, string $descricao, string $periodoEntrega, ?array $arquivos): array
@@ -82,6 +103,9 @@ class TurmaService
         $dataEntrega = $this->normalizarDataEntrega($periodoEntrega);
         if ($periodoEntrega !== '' && $dataEntrega === null) {
             return ['sucesso' => false, 'mensagem' => 'Informe uma data e hora de entrega válidas.'];
+        }
+        if ($dataEntrega !== null && $this->prazoEstaEncerrado($dataEntrega)) {
+            return ['sucesso' => false, 'mensagem' => 'O prazo de entrega deve estar em uma data futura.'];
         }
 
         $anexos = $this->validarAnexos($arquivos);
@@ -125,6 +149,18 @@ class TurmaService
         return $this->repository->listStudentClasses($alunoId);
     }
 
+    public function getAtividadesPendentesProximasDoAluno(int $alunoId): array
+    {
+        $atividades = $this->enriquecerAtividades($this->repository->listPendingActivitiesForStudent($alunoId));
+        $pendentes = array_filter($atividades, static function (array $atividade): bool {
+            return ($atividade['entrega_id'] ?? null) === null
+                && !empty($atividade['pode_entregar'])
+                && in_array((string) ($atividade['prazo_status'] ?? ''), ['hoje', 'proximo'], true);
+        });
+
+        return array_values(array_slice($pendentes, 0, 4));
+    }
+
     public function entrarNaTurma(int $alunoId, string $codigo): array
     {
         $codigo = strtoupper(preg_replace('/[^A-Z0-9]/', '', $codigo) ?? '');
@@ -152,8 +188,12 @@ class TurmaService
 
     public function enviarAtividade(int $alunoId, int $atividadeId, ?array $arquivo): array
     {
-        if ($this->repository->findActivityForStudent($alunoId, $atividadeId) === null) {
+        $atividade = $this->repository->findActivityForStudent($alunoId, $atividadeId);
+        if ($atividade === null) {
             return ['sucesso' => false, 'mensagem' => 'Atividade não encontrada ou indisponível para sua conta.'];
+        }
+        if ($this->prazoEstaEncerrado($atividade['periodo_entrega'] ?? null)) {
+            return ['sucesso' => false, 'mensagem' => 'O prazo desta atividade já foi encerrado. Não é mais possível enviar ou substituir a entrega.'];
         }
 
         $anexo = $this->validarArquivoEntrega($arquivo);
@@ -350,13 +390,105 @@ class TurmaService
             return null;
         }
 
-        $data = DateTime::createFromFormat('Y-m-d\\TH:i', $valor);
-        $erros = DateTime::getLastErrors();
+        $data = DateTimeImmutable::createFromFormat('!Y-m-d\\TH:i', $valor, $this->fusoHorario());
+        $erros = DateTimeImmutable::getLastErrors();
         if ($data === false || ($erros !== false && ($erros['warning_count'] > 0 || $erros['error_count'] > 0))) {
             return null;
         }
 
         return $data->format('Y-m-d H:i:s');
+    }
+
+    private function enriquecerAtividades(array $atividades): array
+    {
+        foreach ($atividades as &$atividade) {
+            $prazo = $this->informacoesDoPrazo($atividade['periodo_entrega'] ?? null);
+            $atividade = array_merge($atividade, $prazo);
+            $atividade['entrega_apos_prazo'] = false;
+
+            if (!empty($atividade['entrega_enviada_em']) && $prazo['prazo_data'] instanceof DateTimeImmutable) {
+                $entrega = $this->dataDoBanco((string) $atividade['entrega_enviada_em']);
+                $atividade['entrega_apos_prazo'] = $entrega instanceof DateTimeImmutable && $entrega > $prazo['prazo_data'];
+            }
+        }
+        unset($atividade);
+
+        return $atividades;
+    }
+
+    /** @return array{prazo_status: string, prazo_texto: string, prazo_data: ?DateTimeImmutable, pode_entregar: bool} */
+    private function informacoesDoPrazo(?string $periodoEntrega): array
+    {
+        $data = $this->dataDoBanco($periodoEntrega);
+        if (!$data instanceof DateTimeImmutable) {
+            return [
+                'prazo_status' => 'sem-prazo',
+                'prazo_texto' => 'Sem prazo definido',
+                'prazo_data' => null,
+                'pode_entregar' => true,
+            ];
+        }
+
+        $agora = $this->agora();
+        $formatada = $data->format('d/m/Y \\à\\s H:i');
+        if ($agora > $data) {
+            return [
+                'prazo_status' => 'encerrado',
+                'prazo_texto' => 'Prazo encerrado em ' . $formatada,
+                'prazo_data' => $data,
+                'pode_entregar' => false,
+            ];
+        }
+
+        $segundos = $data->getTimestamp() - $agora->getTimestamp();
+        if ($data->format('Y-m-d') === $agora->format('Y-m-d')) {
+            $texto = 'Entrega hoje às ' . $data->format('H:i');
+            $status = 'hoje';
+        } elseif ($segundos <= 72 * 60 * 60) {
+            $texto = 'Prazo próximo: ' . $formatada;
+            $status = 'proximo';
+        } else {
+            $texto = 'Entrega até ' . $formatada;
+            $status = 'aberto';
+        }
+
+        return [
+            'prazo_status' => $status,
+            'prazo_texto' => $texto,
+            'prazo_data' => $data,
+            'pode_entregar' => true,
+        ];
+    }
+
+    private function prazoEstaEncerrado(?string $periodoEntrega): bool
+    {
+        $data = $this->dataDoBanco($periodoEntrega);
+        return $data instanceof DateTimeImmutable && $this->agora() > $data;
+    }
+
+    private function dataDoBanco(?string $valor): ?DateTimeImmutable
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        $data = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $valor, $this->fusoHorario());
+        $erros = DateTimeImmutable::getLastErrors();
+        if ($data === false || ($erros !== false && ($erros['warning_count'] > 0 || $erros['error_count'] > 0))) {
+            return null;
+        }
+
+        return $data;
+    }
+
+    private function agora(): DateTimeImmutable
+    {
+        return new DateTimeImmutable('now', $this->fusoHorario());
+    }
+
+    private function fusoHorario(): DateTimeZone
+    {
+        return new DateTimeZone(self::FUSO_HORARIO);
     }
 
     private function gerarCodigo(): string

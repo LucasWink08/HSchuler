@@ -290,7 +290,6 @@
             <a href="#inequacoes"><span>≠</span><span><strong>Inequações</strong><small>Intermediário</small></span></a>
           </div>
         </li>
-        <li><a href="<?= app_route('/videoaulas') ?>">Videoaulas</a></li>
         <li><a href="<?= app_route('/aluno/simulados') ?>">Simulados</a></li>
         <li><a href="<?= app_route('/ranking') ?>">Ranking</a></li>
         <li><a href="<?= app_route('/') ?>#sobre">Sobre</a></li>

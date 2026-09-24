@@ -2,6 +2,8 @@
 $area = $area ?? 'potenciacao';
 $siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
 $streakImage = $siteRoot . '/imgs/streak.png';
+$planetaUm = $siteRoot . '/imgs/planeta.png';
+$planetaDois = $siteRoot . '/imgs/planeta2.png';
 
 $conteudos = [
     'potenciacao' => ['titulo' => 'Potencia&ccedil;&atilde;o', 'etapas' => ['Introdu&ccedil;&atilde;o', 'Base e expoente', 'Pot&ecirc;ncias de base 10', 'Expoente zero e um', 'Exerc&iacute;cios de potencia&ccedil;&atilde;o', 'Revis&atilde;o', 'Produto de pot&ecirc;ncias', 'Quociente de pot&ecirc;ncias', 'Pot&ecirc;ncia de uma pot&ecirc;ncia', 'Expoentes negativos', 'Nota&ccedil;&atilde;o cient&iacute;fica', 'Propriedades combinadas', 'Desafio final']],
@@ -95,6 +97,12 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
 
         body.path-page > * { position: relative; z-index: 1; }
         body.path-page .site-nav { z-index: 100; }
+        body.path-page > .path-planets { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+        .path-planet { position: absolute; height: auto; user-select: none; }
+        .path-planet-one { top: 14%; left: -12vw; width: min(360px, 28vw); opacity: .42; filter: drop-shadow(0 0 28px rgba(211, 98, 255, .28)); animation: path-planet-drift 26s ease-in-out infinite alternate; }
+        .path-planet-two { right: -13vw; bottom: 7%; width: min(390px, 31vw); opacity: .52; filter: drop-shadow(0 0 30px rgba(48, 209, 255, .25)); animation: path-planet-drift-reverse 29s ease-in-out infinite alternate; }
+        @keyframes path-planet-drift { to { transform: translate(34px, 22px) rotate(7deg); } }
+        @keyframes path-planet-drift-reverse { to { transform: translate(-34px, -20px) rotate(-6deg); } }
 
         .path-header {
             display: grid;
@@ -267,28 +275,70 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
             .node-circle { width: 58px; height: 58px; }
             .path-node.current .node-circle { width: 64px; height: 64px; }
             .path-card { border-radius: 16px; }
+            .path-planet-one { top: 13%; left: -34vw; width: 260px; opacity: .25; }
+            .path-planet-two { right: -34vw; bottom: 5%; width: 270px; opacity: .32; }
         }
+        @media (prefers-reduced-motion: reduce) { .path-planet { animation: none; } }
     </style>
 </head>
 <body class="path-page">
     <style>
-        .path-node { -webkit-tap-highlight-color: transparent; }
-        .path-node .node-circle { transform: none !important; }
-        .path-node:not(:disabled):hover .node-circle,
+        .path-node {
+            width: 88px;
+            height: 88px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            text-decoration: none;
+        }
+
+        .path-node.locked { cursor: not-allowed; }
+        .path-node > span { pointer-events: none; }
+
+        .path-node .node-circle {
+            position: relative;
+            overflow: hidden;
+            transform: none !important;
+            transition: filter .13s ease, box-shadow .13s ease;
+        }
+
+        .path-node .node-circle::before {
+            position: absolute;
+            top: 7%;
+            right: 15%;
+            left: 15%;
+            height: 28%;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0));
+            content: '';
+            opacity: .75;
+            pointer-events: none;
+            transition: opacity .16s ease, transform .16s ease;
+        }
+
+        .path-node:not(.locked):hover .node-circle,
         .path-node:focus-visible .node-circle {
-            filter: brightness(1.08);
+            filter: brightness(1.12) saturate(1.08);
         }
+
+        .path-node:not(.locked):hover .node-circle::before,
+        .path-node:focus-visible .node-circle::before { opacity: 1; }
+
         .path-node.is-pressing .node-circle,
-        .path-node:not(:disabled):active .node-circle {
-            filter: brightness(.8) saturate(1.15);
-            box-shadow: inset 0 5px 12px rgba(0, 31, 84, .52), 0 0 0 5px rgba(40, 153, 235, .25);
+        .path-node:not(.locked):active .node-circle {
+            filter: brightness(.78) saturate(1.12);
         }
-        .path-node.is-pressing { pointer-events: none; }
+
+        .path-node.is-pressing .node-circle::before,
+        .path-node:not(.locked):active .node-circle::before { opacity: .14; }
         @media (prefers-reduced-motion: reduce) {
             .path-node .node-circle { transition: none; }
         }
     </style>
     <?php $navbarActive = 'trilhas'; require APP_ROOT . '/resources/views/layouts/navbar.php'; ?>
+    <div class="path-planets" aria-hidden="true">
+        <img class="path-planet path-planet-one" src="<?= htmlspecialchars($planetaUm, ENT_QUOTES, 'UTF-8') ?>" alt="">
+        <img class="path-planet path-planet-two" src="<?= htmlspecialchars($planetaDois, ENT_QUOTES, 'UTF-8') ?>" alt="">
+    </div>
     <header class="path-header">
         <a class="path-back" href="<?= app_route('/') ?>">&larr; Voltar</a>
         <h1>Trilha de <?= $conteudo['titulo'] ?></h1>
@@ -329,7 +379,11 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
                 </svg>
                 <?php foreach ($nos as $indice => $no): ?>
                     <?php $podeAbrir = $no['etapa_id'] !== null && $no['estado'] !== 'locked'; $urlEtapa = app_route('/aluno/etapa') . '&area=' . urlencode($area) . '&etapa_id=' . (int) ($no['etapa_id'] ?? 0) . '&etapa=' . urlencode($no['nome']); ?>
-<button class="path-node <?= $no['estado'] ?>" type="button" style="--x:<?= $no['x'] ?>;--y:<?= $no['y'] ?>" aria-label="<?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?>"<?= $podeAbrir ? ' data-url="' . htmlspecialchars($urlEtapa, ENT_QUOTES, 'UTF-8') . '"' : ' disabled aria-disabled="true"' ?>><span class="node-circle" aria-hidden="true"><?= $no['icone'] ?></span><span class="node-tooltip"><?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?></span></button>
+                    <?php if ($podeAbrir): ?>
+                        <a class="path-node <?= $no['estado'] ?>" href="<?= htmlspecialchars($urlEtapa, ENT_QUOTES, 'UTF-8') ?>" data-url="<?= htmlspecialchars($urlEtapa, ENT_QUOTES, 'UTF-8') ?>" style="--x:<?= $no['x'] ?>;--y:<?= $no['y'] ?>" aria-label="Abrir etapa: <?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?>"><span class="node-circle" aria-hidden="true"><?= $no['icone'] ?></span><span class="node-tooltip"><?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?></span></a>
+                    <?php else: ?>
+                        <span class="path-node <?= $no['estado'] ?> locked" style="--x:<?= $no['x'] ?>;--y:<?= $no['y'] ?>" role="img" aria-label="<?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?> — etapa bloqueada"><span class="node-circle" aria-hidden="true"><?= $no['icone'] ?></span><span class="node-tooltip"><?= htmlspecialchars($no['nome'], ENT_QUOTES, 'UTF-8') ?></span></span>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </main>
             <p class="path-note">O estado das etapas Ã© carregado a partir do progresso registrado.</p>
@@ -365,12 +419,14 @@ $formatarDado = static function ($valor): string { return $valor === null ? '&md
         </aside>
     </section>
     <script>
-        document.querySelectorAll('.path-node[data-url]').forEach((button) => {
-            button.addEventListener('click', () => {
-                if (button.classList.contains('is-pressing')) return;
-                button.classList.add('is-pressing');
-                button.setAttribute('aria-busy', 'true');
-                window.setTimeout(() => window.location.assign(button.dataset.url), 130);
+        document.querySelectorAll('.path-node[data-url]').forEach((node) => {
+            node.addEventListener('click', (event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                event.preventDefault();
+                if (node.classList.contains('is-pressing')) return;
+                node.classList.add('is-pressing');
+                node.setAttribute('aria-busy', 'true');
+                window.setTimeout(() => window.location.assign(node.dataset.url), 110);
             });
         });
     </script>

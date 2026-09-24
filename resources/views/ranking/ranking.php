@@ -1,6 +1,10 @@
 <?php
 $siteRoot = rtrim((string) preg_replace('#/public$#', '', APP_URL), '/');
 $backgroundDois = $siteRoot . '/imgs/background2.png';
+$participantes = $participantes ?? [];
+$usuarioAtualId = filter_var($_SESSION['user_id'] ?? null, FILTER_VALIDATE_INT);
+$tipoAtual = (string) ($_SESSION['role'] ?? '');
+$medalhas = [1 => '🥇', 2 => '🥈', 3 => '🥉'];
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -257,11 +261,49 @@ $backgroundDois = $siteRoot . '/imgs/background2.png';
       line-height: 1.4;
     }
 
+    .rank-avatar {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      overflow: hidden;
+      place-items: center;
+      border: 1px solid rgba(157, 204, 255, .7);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #4b77de, #5438ae);
+      box-shadow: 0 0 12px rgba(94, 141, 255, .28);
+      color: #fff;
+      font-size: .88rem;
+      font-weight: 700;
+    }
+
+    .rank-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .rank-card.is-current {
+      border-color: rgba(122, 202, 255, .88);
+      background: linear-gradient(150deg, rgba(18, 59, 113, .94), rgba(7, 19, 45, .88));
+      box-shadow: 0 0 0 1px rgba(91, 177, 255, .14), 0 19px 38px rgba(28, 86, 194, .25), inset 0 1px rgba(210, 235, 255, .12);
+    }
+
+    .rank-card.is-current .rank-pos { border-color: #91d7ff; background: rgba(40, 138, 233, .25); }
+
     .rank-score {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      gap: 8px;
       flex-shrink: 0;
+    }
+
+    .rank-level {
+      padding: 8px 10px;
+      border: 1px solid rgba(174, 133, 255, .42);
+      border-radius: 999px;
+      background: rgba(107, 71, 195, .14);
+      color: #d4c4ff;
+      font-size: .71rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .score-pill {
@@ -279,6 +321,15 @@ $backgroundDois = $siteRoot . '/imgs/background2.png';
       letter-spacing: .02em;
       white-space: nowrap;
       box-shadow: inset 0 1px rgba(255,255,255,.18);
+    }
+
+    .ranking-empty {
+      padding: 32px 22px;
+      border: 1px solid rgba(109, 142, 255, .4);
+      border-radius: 18px;
+      background: rgba(7, 16, 35, .76);
+      color: rgba(222, 232, 255, .8);
+      text-align: center;
     }
 
     @media (max-width: 760px) {
@@ -385,73 +436,43 @@ $backgroundDois = $siteRoot . '/imgs/background2.png';
       <h1>Ranking</h1>
     </div>
 
-    <div class="ranking-sub">Leaderboard (esboço). Substitua os dados fixos por resultados do banco.</div>
+    <div class="ranking-sub">Todos os alunos cadastrados, ordenados por pontos, nível e atividades concluídas.</div>
 
     <div class="ranking-board">
-      <div class="rank-card">
-        <div class="rank-left">
-          <div class="rank-pos">1</div>
-          <div class="rank-name">
-            <strong>Aluno Exemplo</strong>
-            <span>Concluiu 42 atividades</span>
-          </div>
-        </div>
-        <div class="rank-score">
-          <div class="score-pill">🏅 1200 pts</div>
-        </div>
-      </div>
-
-      <div class="rank-card">
-        <div class="rank-left">
-          <div class="rank-pos">2</div>
-          <div class="rank-name">
-            <strong>Maria Souza</strong>
-            <span>Concluiu 38 atividades</span>
-          </div>
-        </div>
-        <div class="rank-score">
-          <div class="score-pill">🥈 1050 pts</div>
-        </div>
-      </div>
-
-      <div class="rank-card">
-        <div class="rank-left">
-          <div class="rank-pos">3</div>
-          <div class="rank-name">
-            <strong>João Pedro</strong>
-            <span>Concluiu 33 atividades</span>
-          </div>
-        </div>
-        <div class="rank-score">
-          <div class="score-pill">🥉 980 pts</div>
-        </div>
-      </div>
-
-      <div class="rank-card">
-        <div class="rank-left">
-          <div class="rank-pos">4</div>
-          <div class="rank-name">
-            <strong>Ana Clara</strong>
-            <span>Concluiu 29 atividades</span>
-          </div>
-        </div>
-        <div class="rank-score">
-          <div class="score-pill">900 pts</div>
-        </div>
-      </div>
-
-      <div class="rank-card">
-        <div class="rank-left">
-          <div class="rank-pos">5</div>
-          <div class="rank-name">
-            <strong>Lucas Lima</strong>
-            <span>Concluiu 27 atividades</span>
-          </div>
-        </div>
-        <div class="rank-score">
-          <div class="score-pill">860 pts</div>
-        </div>
-      </div>
+      <?php if ($participantes === []): ?>
+        <p class="ranking-empty">Ainda não há alunos cadastrados para exibir no ranking.</p>
+      <?php else: ?>
+        <?php foreach ($participantes as $indice => $participante): ?>
+          <?php
+          $posicao = $indice + 1;
+          $tipo = (string) ($participante['tipo'] ?? 'aluno');
+          $nome = (string) ($participante['nome'] ?? 'Participante');
+          $xp = max(0, (int) ($participante['xp_total'] ?? 0));
+          $nivel = max(0, (int) ($participante['nivel'] ?? 0));
+          $atividades = max(0, (int) ($participante['atividades_concluidas'] ?? 0));
+          $foto = basename(trim((string) ($participante['foto_perfil'] ?? '')));
+          $fotoUrl = $foto === '' ? '' : APP_URL . '/uploads/perfis/' . rawurlencode($foto);
+          $inicial = function_exists('mb_substr') ? mb_strtoupper(mb_substr($nome, 0, 1, 'UTF-8'), 'UTF-8') : strtoupper(substr($nome, 0, 1));
+          $ehUsuarioAtual = $usuarioAtualId !== false && $usuarioAtualId !== null
+              && (int) $participante['id'] === (int) $usuarioAtualId
+              && $tipo === $tipoAtual;
+          ?>
+          <article class="rank-card<?= $ehUsuarioAtual ? ' is-current' : '' ?>">
+            <div class="rank-left">
+              <div class="rank-pos" aria-label="Posição <?= $posicao ?>"><?= $medalhas[$posicao] ?? $posicao ?></div>
+              <span class="rank-avatar" aria-hidden="true"><?php if ($fotoUrl !== ''): ?><img src="<?= htmlspecialchars($fotoUrl, ENT_QUOTES, 'UTF-8') ?>" alt=""><?php else: ?><?= htmlspecialchars($inicial, ENT_QUOTES, 'UTF-8') ?><?php endif; ?></span>
+              <div class="rank-name">
+                <strong><?= htmlspecialchars($nome, ENT_QUOTES, 'UTF-8') ?><?= $ehUsuarioAtual ? ' (você)' : '' ?></strong>
+                <span><?= $tipo === 'aluno' ? $atividades . ($atividades === 1 ? ' atividade concluída' : ' atividades concluídas') : 'Professor cadastrado na plataforma' ?></span>
+              </div>
+            </div>
+            <div class="rank-score">
+              <span class="rank-level"><?= $tipo === 'aluno' ? 'Nível ' . $nivel : 'Professor' ?></span>
+              <div class="score-pill"><?= ($medalhas[$posicao] ?? '') ?> <?= $xp ?> XP</div>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
   </div>
 </body>

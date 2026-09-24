@@ -57,6 +57,51 @@ class TrilhaService
         }
     }
 
+    /**
+     * Retorna todos os alunos cadastrados ordenados pela evolução na plataforma.
+     *
+     * @return array<int, array{id:int, nome:string, foto_perfil:?string, tipo:string, xp_total:int, nivel:int, atividades_concluidas:int}>
+     */
+    public function getRankingGeral(): array
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->query(
+                "SELECT aluno.id,
+                        aluno.usuario AS nome,
+                        aluno.foto_perfil,
+                        'aluno' AS tipo,
+                        GREATEST(aluno.xp_total, COALESCE(xp.xp_total, 0)) AS xp_total,
+                        CASE
+                            WHEN GREATEST(aluno.xp_total, COALESCE(xp.xp_total, 0)) >= 320 THEN 5
+                            WHEN GREATEST(aluno.xp_total, COALESCE(xp.xp_total, 0)) >= 210 THEN 4
+                            WHEN GREATEST(aluno.xp_total, COALESCE(xp.xp_total, 0)) >= 120 THEN 3
+                            WHEN GREATEST(aluno.xp_total, COALESCE(xp.xp_total, 0)) >= 50 THEN 2
+                            ELSE 1
+                        END AS nivel,
+                        COALESCE(progresso.atividades_concluidas, 0) AS atividades_concluidas
+                 FROM aluno
+                 LEFT JOIN (
+                    SELECT aluno_id, SUM(quantidade) AS xp_total
+                    FROM xp_transacao
+                    GROUP BY aluno_id
+                 ) AS xp ON xp.aluno_id = aluno.id
+                 LEFT JOIN (
+                    SELECT aluno_id, COUNT(DISTINCT etapa_id) AS atividades_concluidas
+                    FROM progresso_aluno
+                    WHERE estado IN ('concluida', 'concluido', 'complete')
+                    GROUP BY aluno_id
+                 ) AS progresso ON progresso.aluno_id = aluno.id
+
+                 ORDER BY xp_total DESC, nivel DESC, atividades_concluidas DESC, nome ASC"
+            );
+
+            return $stmt->fetchAll() ?: [];
+        } catch (PDOException $exception) {
+            return [];
+        }
+    }
+
     public function getProgressoPorArea(?int $alunoId): array
     {
         if ($alunoId === null || $alunoId <= 0) {

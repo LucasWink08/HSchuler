@@ -16,7 +16,10 @@ return [
     '/videoaulas/assistir' => function () { (new VideoaulaController())->assistir(); },
     '/sobre' => APP_ROOT . '/resources/views/layouts/sobre.php',
     '/trilhas' => APP_ROOT . '/resources/views/trilha/escolher.php',
-    '/ranking' => APP_ROOT . '/resources/views/ranking/ranking.php',
+    '/ranking' => function () {
+        $participantes = (new TrilhaService())->getRankingGeral();
+        require APP_ROOT . '/resources/views/ranking/ranking.php';
+    },
     '/listar' => APP_ROOT . '/resources/views/aluno/listar.php',
     '/aluno/dashboard' => function () { (new AlunoController())->dashboard(); },
     '/aluno/trilha' => function () { (new AlunoController())->trilha(); },
@@ -39,6 +42,7 @@ return [
     '/professor/turmas' => function () { (new TurmaController())->professorIndex(); },
     '/professor/turmas/criar' => function () { (new TurmaController())->criarTurma(); },
     '/professor/turma' => function () { (new TurmaController())->professorTurma(); },
+    '/professor/turma/aviso' => function () { (new TurmaController())->criarAviso(); },
     '/professor/turma/atividade' => function () { (new TurmaController())->criarAtividade(); },
     '/professor/turma/nota' => function () { (new TurmaController())->atribuirNota(); },
 ];

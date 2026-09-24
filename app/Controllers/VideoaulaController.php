@@ -5,8 +5,8 @@ class VideoaulaController
     public function index(): void
     {
         $service = new VideoService();
-        $turmaSelecionada = $this->getTurmaSelecionada();
-        $turmaId = $turmaSelecionada !== null ? (int) $turmaSelecionada['id'] : null;
+        $turmaSelecionada = $this->getTurmaDoAlunoSelecionada();
+        $turmaId = (int) $turmaSelecionada['id'];
         $slug = trim((string) ($_GET['area'] ?? ''));
         $areaSelecionada = $slug !== '' ? $service->getArea($slug) : null;
 
@@ -23,15 +23,15 @@ class VideoaulaController
 
     public function assistir(): void
     {
+        $turmaSelecionada = $this->getTurmaDoAlunoSelecionada();
+        $turmaId = (int) $turmaSelecionada['id'];
         $videoId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
         if ($videoId === false || $videoId === null || $videoId <= 0) {
-            header('Location: ' . app_route('/videoaulas'));
+            header('Location: ' . $this->videoaulasRoute($turmaId));
             exit;
         }
 
         $service = new VideoService();
-        $turmaSelecionada = $this->getTurmaSelecionada();
-        $turmaId = $turmaSelecionada !== null ? (int) $turmaSelecionada['id'] : null;
         $video = $service->getVideo((int) $videoId, $turmaId);
         if ($video === null) {
             http_response_code(404);
@@ -46,11 +46,11 @@ class VideoaulaController
         require APP_ROOT . '/resources/views/trilha/assistir_video.php';
     }
 
-    private function getTurmaSelecionada(): ?array
+    private function getTurmaDoAlunoSelecionada(): array
     {
         $turmaId = filter_var($_GET['turma_id'] ?? null, FILTER_VALIDATE_INT);
         if ($turmaId === false || $turmaId === null) {
-            return null;
+            $this->redirecionarParaTurmas();
         }
         if ($turmaId <= 0) {
             $this->notFound('Turma não encontrada.');
@@ -63,10 +63,13 @@ class VideoaulaController
             exit;
         }
 
+        if ($role !== 'aluno') {
+            header('Location: ' . app_route('/professor/videos'));
+            exit;
+        }
+
         $turmaService = new TurmaService();
-        $turma = $role === 'aluno'
-            ? $turmaService->getTurmaDoAluno((int) $usuarioId, (int) $turmaId)
-            : ($role === 'professor' ? $turmaService->getTurmaDoProfessor((int) $usuarioId, (int) $turmaId) : null);
+        $turma = $turmaService->getTurmaDoAluno((int) $usuarioId, (int) $turmaId);
         if ($turma === null) {
             $this->notFound('Turma não encontrada ou indisponível para sua conta.');
         }
@@ -74,9 +77,15 @@ class VideoaulaController
         return $turma;
     }
 
-    private function videoaulasRoute(?int $turmaId): string
+    private function videoaulasRoute(int $turmaId): string
     {
-        return app_route('/videoaulas') . ($turmaId !== null ? '&turma_id=' . $turmaId : '');
+        return app_route('/videoaulas') . '&turma_id=' . $turmaId;
+    }
+
+    private function redirecionarParaTurmas(): never
+    {
+        header('Location: ' . app_route('/aluno/turma'));
+        exit;
     }
 
     private function notFound(string $mensagem): never

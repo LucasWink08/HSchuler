@@ -72,6 +72,18 @@ class TurmaRepository
                 FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
         );
+        $this->db->exec(
+            'CREATE TABLE IF NOT EXISTS aviso_turma (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                turma_id INT NOT NULL,
+                professor_id INT NOT NULL,
+                mensagem TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_aviso_turma_data (turma_id, created_at),
+                FOREIGN KEY (turma_id) REFERENCES turma(id) ON DELETE CASCADE,
+                FOREIGN KEY (professor_id) REFERENCES professor(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
     }
 
     public function codeExists(string $codigo): bool
@@ -178,6 +190,26 @@ class TurmaRepository
         return $stmt->fetchAll() ?: [];
     }
 
+    public function listPendingActivitiesForStudent(int $alunoId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT atividade_turma.id, atividade_turma.titulo, atividade_turma.periodo_entrega,
+                    turma.id AS turma_id, turma.nome AS turma_nome,
+                    entrega_atividade_turma.id AS entrega_id
+             FROM turma_aluno
+             INNER JOIN turma ON turma.id = turma_aluno.turma_id
+             INNER JOIN atividade_turma ON atividade_turma.turma_id = turma.id
+             LEFT JOIN entrega_atividade_turma ON entrega_atividade_turma.atividade_turma_id = atividade_turma.id
+                 AND entrega_atividade_turma.aluno_id = turma_aluno.aluno_id
+             WHERE turma_aluno.aluno_id = :aluno_id
+             ORDER BY atividade_turma.periodo_entrega ASC, atividade_turma.id DESC
+             LIMIT 30'
+        );
+        $stmt->execute([':aluno_id' => $alunoId]);
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function findStudentClass(int $alunoId, int $turmaId): ?array
     {
         $stmt = $this->db->prepare(
@@ -198,7 +230,7 @@ class TurmaRepository
     public function findActivityForStudent(int $alunoId, int $atividadeId): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT atividade_turma.id, atividade_turma.turma_id
+            'SELECT atividade_turma.id, atividade_turma.turma_id, atividade_turma.periodo_entrega
              FROM atividade_turma
              INNER JOIN turma_aluno ON turma_aluno.turma_id = atividade_turma.turma_id
              WHERE atividade_turma.id = :atividade_id AND turma_aluno.aluno_id = :aluno_id
@@ -208,6 +240,36 @@ class TurmaRepository
 
         $atividade = $stmt->fetch();
         return $atividade ?: null;
+    }
+
+    public function createAnnouncement(int $turmaId, int $professorId, string $mensagem): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO aviso_turma (turma_id, professor_id, mensagem)
+             VALUES (:turma_id, :professor_id, :mensagem)'
+        );
+        $stmt->execute([
+            ':turma_id' => $turmaId,
+            ':professor_id' => $professorId,
+            ':mensagem' => $mensagem,
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function listAnnouncements(int $turmaId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT aviso_turma.id, aviso_turma.mensagem, aviso_turma.created_at,
+                    professor.nome AS professor_nome
+             FROM aviso_turma
+             INNER JOIN professor ON professor.id = aviso_turma.professor_id
+             WHERE aviso_turma.turma_id = :turma_id
+             ORDER BY aviso_turma.created_at DESC, aviso_turma.id DESC'
+        );
+        $stmt->execute([':turma_id' => $turmaId]);
+
+        return $stmt->fetchAll() ?: [];
     }
 
     public function listStudents(int $turmaId): array
@@ -408,6 +470,7 @@ class TurmaRepository
         $stmt = $this->db->prepare(
             'SELECT entrega_atividade_turma.id, entrega_atividade_turma.nome_original, entrega_atividade_turma.nota,
                     entrega_atividade_turma.created_at, atividade_turma.id AS atividade_id, atividade_turma.titulo AS atividade_titulo,
+                    atividade_turma.periodo_entrega,
                     aluno.usuario AS aluno_nome, aluno.email AS aluno_email
              FROM entrega_atividade_turma
              INNER JOIN atividade_turma ON atividade_turma.id = entrega_atividade_turma.atividade_turma_id

@@ -198,7 +198,8 @@ class AlunoController
     public function ranking(): void
     {
         $this->requireAluno();
-        require APP_ROOT . '/resources/views/aluno/ranking.php';
+        $participantes = $this->trilhaService->getRankingGeral();
+        require APP_ROOT . '/resources/views/ranking/ranking.php';
     }
 
     private function buscarPerfil(int $alunoId): ?array

@@ -14,7 +14,8 @@
         <header class="teacher-video-header">
             <p>Publicação de conteúdo</p>
             <h1>Escolha um <span>conteúdo</span></h1>
-            <span>Cadastre videoaulas para cada tema da plataforma. Assim que publicadas, elas ficam disponíveis para os alunos na área de Videoaulas.</span>
+            <span>Cadastre videoaulas para cada tema da plataforma. Assim que publicadas, elas ficam disponíveis somente para os alunos da turma escolhida.</span>
+            <?php if ($turmaSelecionada !== null): ?><span class="teacher-video-class-context">Turma selecionada: <strong><?= htmlspecialchars((string) $turmaSelecionada['nome'], ENT_QUOTES, 'UTF-8') ?></strong></span><?php endif; ?>
         </header>
 
         <?php if ($success !== ''): ?>
@@ -36,7 +37,7 @@
                     <div class="teacher-card-footer">
                         <span class="teacher-video-count"><?= (int) $area['video_count'] ?> <?= (int) $area['video_count'] === 1 ? 'videoaula publicada' : 'videoaulas publicadas' ?></span>
                         <?php if ($area['modulo_id'] !== null): ?>
-                            <a class="teacher-3d-button" href="<?= app_route('/professor/video/cadastro') ?>&amp;area=<?= urlencode($area['slug']) ?>">Cadastrar videoaula</a>
+                            <a class="teacher-3d-button" href="<?= app_route('/professor/video/cadastro') ?>&amp;area=<?= urlencode($area['slug']) ?><?= $turmaId !== null ? '&amp;turma_id=' . (int) $turmaId : '' ?>">Cadastrar videoaula</a>
                         <?php else: ?>
                             <span class="teacher-3d-button is-disabled">Indisponível</span>
                         <?php endif; ?>
